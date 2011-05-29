@@ -1,0 +1,309 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>ImageFlow_Demo</title>
+		<meta charset="utf-8">
+		<style type="text/css">
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+		</style>
+	</head>	
+		
+	<body>
+		<!-- <script src="js/Three.js"></script> -->
+		<script src="js/Three_debug.js"></script>
+		<script src="js/RequestAnimationFrame.js"></script>
+		<script src="js/Stats.js"></script>
+		<script src="js/AdditionalShaders.js"></script>
+		
+		<script type="text/javascript">
+		
+		var camera;
+		var scene;
+		var renderer;
+		var dirLight;
+		var pointLight;
+		var stats;
+		var container;
+		var randomTex;
+		
+		var postpro = { enabled: true };
+		
+		var firstTime = true;
+		
+		var meshes = [];
+		var meshMaterials = [];
+		var iMaxNumMeshes = 5;
+		var fCamMoveSpeed = 250;
+		var fCamLookSpeed = 0.5;
+		
+		init();
+		animate();
+		
+		function init()
+		{
+			container = document.createElement('div');
+			document.body.appendChild(container);
+			
+			renderer	= new THREE.WebGLRenderer( { stencil: true, antialias: false, clearColor: new THREE.Color( 0xffffff ) } );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			container.appendChild( renderer.domElement );
+			
+			scene 		= new THREE.Scene();
+			
+			camera 		= new THREE.FlyCamera( { fov: 60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 500, movementSpeed: fCamMoveSpeed, rollSpeed: fCamLookSpeed, dragToLook : true } );//THREE.Camera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera.position.z = 100;
+			camera.position.y = 10; 
+						
+			pointLight = new THREE.PointLight( 0xffffff, 2, 5000 );
+			pointLight.position.x = 0;
+			pointLight.position.y = 300;
+			pointLight.position.z = 200;
+			scene.addLight( pointLight );
+			
+			scene.addLight( new THREE.AmbientLight( 0x646464 ) );
+			
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			container.appendChild( stats.domElement );
+						
+			var mcGrassTex = THREE.ImageUtils.loadTexture( "grass.png", new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.NearestFilter );
+			var mcDirtTex = THREE.ImageUtils.loadTexture( "dirt.png", new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.NearestFilter );
+			
+			var CurrMesh = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshLambertMaterial( { map: mcGrassTex } ) );
+			meshes.push( CurrMesh );
+			meshMaterials.push( CurrMesh.materials[ 0 ] );
+			scene.addObject( CurrMesh );
+			
+			CurrMesh = new THREE.Mesh( new THREE.Cube( 30, 30, 30 ), new THREE.MeshLambertMaterial( { map: mcGrassTex } ) );
+			CurrMesh.position.x += 30;
+			CurrMesh.position.y += 5;
+			meshes.push( CurrMesh );
+			meshMaterials.push( CurrMesh.materials[ 0 ] );
+			scene.addObject( CurrMesh );
+			
+			CurrMesh = new THREE.Mesh( new THREE.Cube( 30, 30, 30 ), new THREE.MeshLambertMaterial( { map: mcGrassTex } ) );
+			CurrMesh.position.z += 30;
+			CurrMesh.position.x -= 25;
+			CurrMesh.position.y += 5;
+			meshes.push( CurrMesh );
+			meshMaterials.push( CurrMesh.materials[ 0 ] );
+			scene.addObject( CurrMesh );
+			
+			CurrMesh = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshLambertMaterial( { map: mcGrassTex } ) );
+			CurrMesh.position.z -= 20;
+			CurrMesh.position.x -= 10;
+			meshes.push( CurrMesh );
+			meshMaterials.push( CurrMesh.materials[ 0 ] );
+			scene.addObject( CurrMesh );
+			
+			CurrMesh = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshLambertMaterial( { map: mcGrassTex } ) );
+			CurrMesh.position.z += 22;
+			CurrMesh.position.x += 5;
+			meshes.push( CurrMesh );
+			meshMaterials.push( CurrMesh.materials[ 0 ] );
+			scene.addObject( CurrMesh );
+			
+			randomTex = new THREE.Texture( createRandomTexture(), new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.NearestFilter );
+			randomTex.needsUpdate = true;
+			
+			CurrMesh = new THREE.Mesh( new THREE.Plane( 200, 200, 20, 20 ), new THREE.MeshLambertMaterial( { color: 0xA4DB5D, map: mcDirtTex } ) );
+			CurrMesh.rotation.x = -Math.PI / 2;
+			CurrMesh.position.y -= 10;
+			meshes.push( CurrMesh );
+			meshMaterials.push( CurrMesh.materials[ 0 ] );
+			scene.addObject( CurrMesh );
+						
+			initPostpro();
+		}
+		
+		function initPostpro()
+		{
+			postpro.scene = new THREE.Scene();
+			postpro.camera = new THREE.Camera();
+			postpro.camera.projectionMatrix = THREE.Matrix4.makeOrtho( -window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, -window.innerHeight / 2, -10000, 10000 );
+			postpro.camera.position.z = 100;
+			
+			//Depth Render-Target  & Shader
+			postpro.renderTargetDepth = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight,{ minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, type: THREE.UnsignedByteType, stencilBuffer: false } );
+			
+			var depthShader 	= AdditionalShaders[ 'depthLinear' ];
+			var depthUniforms	= THREE.UniformsUtils.clone( depthShader.uniforms );
+			depthUniforms[ "mNear" ].value = camera.near;
+			depthUniforms[ "mFar" ].value = camera.far;
+			depthUniforms[ "opacity" ].value = 1.0;
+			
+			postpro.matDepth = new THREE.MeshShaderMaterial( {
+				
+				uniforms: depthUniforms,
+				vertexShader: depthShader.vertexShader,
+				fragmentShader: depthShader.fragmentShader,
+				blending: THREE.AdditiveBlending,
+				transparent: false
+			} );
+			
+			
+			//SSAO Render-Target & Shader
+			postpro.renderTargetSSAO = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat } );
+			
+			var ssaoShader		= AdditionalShaders[ 'ssaoPostpro' ];
+			var ssaoUniforms	= THREE.UniformsUtils.clone( ssaoShader.uniforms );
+			ssaoUniforms[ "mNear" ].value	= camera.near;
+			ssaoUniforms[ "mFar" ].value	= camera.far;
+			ssaoUniforms[ "opacity" ].value = 1.0;
+			ssaoUniforms[ "tDepth" ].texture = postpro.renderTargetDepth;
+			ssaoUniforms[ "tRandoms" ].texture = randomTex;
+			ssaoUniforms[ "screenWidth" ].value = window.innerWidth;
+			ssaoUniforms[ "screenHeight" ].value = window.innerHeight;
+
+			postpro.matSSAO = new THREE.MeshShaderMaterial( { 
+					uniforms: ssaoUniforms,
+					vertexShader: ssaoShader.vertexShader,
+					fragmentShader: ssaoShader.fragmentShader,
+					blending: THREE.AdditiveBlending,
+					transparent: false
+				} );
+				
+				
+			//Final Image Render-Target & Shader
+			postpro.renderTargetFinal = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat } );
+
+			var screenShader	= THREE.ShaderUtils.lib[ "screen" ];
+			var screenUniforms 	= THREE.UniformsUtils.clone( screenShader.uniforms );
+			screenUniforms[ "tDiffuse" ].texture = postpro.renderTargetSSAO;
+			screenUniforms[ "opacity" ].value = 1.0;
+
+			postpro.matScreen = new THREE.MeshShaderMaterial( {
+
+				uniforms : screenUniforms,
+				vertexShader: screenShader.vertexShader,
+				fragmentShader: screenShader.fragmentShader,
+				blending: THREE.AdditiveBlending,
+				transparent: false
+
+			} );
+			
+			
+			postpro.quad = new THREE.Mesh( new THREE.Plane( window.innerWidth, window.innerHeight ), postpro.matSSAO );
+			postpro.quad.position.z = -100;
+			postpro.scene.addObject( postpro.quad );
+		}
+		
+		function setDepthMats()
+		{
+			for( var i = 0; i < meshes.length; ++i )
+			{
+				meshes[ i ].materials = [ postpro.matDepth ];
+			}
+		}
+		
+		function setRegularMats()
+		{
+			for( var i = 0; i < meshes.length; ++i )
+			{
+				meshes[ i ].materials = [ meshMaterials[ i ] ];
+			}
+		}
+		
+		
+		function animate()
+		{
+			requestAnimationFrame( animate );
+			
+			render();
+			stats.update();
+		}
+		
+		function render()
+		{
+			renderer.clear();
+			
+			setDepthMats();
+			
+			//renderer.render( scene, camera );
+			
+			
+			renderer.render( scene, camera, postpro.renderTargetDepth, true );
+			
+			postpro.quad.materials = [ postpro.matSSAO ];
+			renderer.render( postpro.scene, postpro.camera, postpro.renderTargetSSAO, true );
+			
+			postpro.quad.materials = [ postpro.matScreen ];
+			renderer.render( postpro.scene, postpro.camera );
+			
+			
+		}
+		
+		function loadTexture( path, mapping, callback, i )
+		{
+			var newImg = new Image(),
+				texture = new THREE.Texture( newImg, mapping );
+			
+			newImg.onload = function() { texture.needsUpdate = true; if( callback ) callback( i, texture ); };
+			newImg.src = path;
+			
+			return texture; 
+		}
+		
+		
+		function addTextureCallback( iElement, texture )
+		{
+			meshMaterials[ iElement ].map = texture;
+		}
+	
+		function randPos()
+		{
+			return new THREE.Vector3( ( Math.random() * 2 - 1 ) * 1000, ( Math.random() * 2 - 1 ) * 1000, -Math.random() * 10000 );
+		}
+		
+		function createRandomTexture()
+		{
+			var randVectors = [ new THREE.Vector3( 0.25804, 0.70421, 0.44708 ),
+								new THREE.Vector3( 0.83537, 0.06588, 0.99443 ),
+								new THREE.Vector3( 0.85951, 0.68481, 0.94479 ),
+								new THREE.Vector3( 0.90270, 0.23480, 0.80726 ),
+								new THREE.Vector3( 0.02615, 0.48698, 0.02172 ),
+								new THREE.Vector3( 0.34539, 0.65513, 0.79412 ),
+								new THREE.Vector3( 0.99919, 0.38244, 0.14373 ),
+								new THREE.Vector3( 0.23363, 0.18868, 0.94294 ),
+								new THREE.Vector3( 0.32719, 0.26997, 0.61865 ),
+								new THREE.Vector3( 0.98727, 0.89573, 0.42607 ),
+								new THREE.Vector3( 0.64619, 0.63763, 0.78945 ),
+								new THREE.Vector3( 0.95140, 0.62484, 0.53817 ),
+								new THREE.Vector3( 0.08285, 0.94120, 0.67696 ),
+								new THREE.Vector3( 0.04604, 0.21072, 0.42869 ),
+								new THREE.Vector3( 0.55902, 0.20933, 0.46195 ),
+								new THREE.Vector3( 0.65083, 0.03106, 0.52208 ) ];
+
+			var canvas = document.createElement( 'canvas' );
+			canvas.width = 4;
+			canvas.height = 4;
+			var context = canvas.getContext( '2d' );
+			var image = context.getImageData( 0, 0, 4, 4 );
+		
+		
+			var x = 0, y = 0;
+
+
+			for ( var i = 0, j = 0, l = image.data.length; i < l; i += 4, j ++ ) 
+			{
+				image.data[ i ]		= randVectors[ j ].x * 255;
+				image.data[ i + 1 ] = randVectors[ j ].y * 255;
+				image.data[ i + 2 ] = randVectors[ j ].z * 255;
+				image.data[ i + 3 ] = 255;
+			}
+
+			context.putImageData( image, 0, 0 );
+			return canvas;
+		}
+				
+		</script>
+
+	</body>
+</html>

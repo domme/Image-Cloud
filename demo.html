@@ -1,0 +1,199 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>Demo</title>
+		<meta charset="utf-8">
+		<style type="text/css">
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+		</style>
+	</head>	
+		
+	<body>
+		<!-- <script src="js/Three.js"></script> -->
+		<script src="js/Three_debug.js"></script>
+		<script src="js/RequestAnimationFrame.js"></script>
+		<script src="js/Stats.js"></script>
+		<script src="js/AdditionalShaders.js"></script>
+		
+		<script type="text/javascript">
+		
+		var camera;
+		var scene;
+		var renderer;
+		var dirLight;
+		var pointLight;
+		var stats;
+				
+		var postpro = { enabled: true };
+		
+		var firstTime = true;
+		
+		var meshes = [];
+		var meshMaterials = [];
+		var iMaxNumMeshes = 5;
+		var fCamMoveSpeed = 250;
+		var fCamLookSpeed = 0.5;
+		
+		init();
+		animate();
+		
+		function init()
+		{
+			container = document.createElement('div');
+			document.body.appendChild(container);
+			
+			renderer	= new THREE.WebGLRenderer( { stencil: true, antialias: false, clearColor: new THREE.Color( 0xffffff ) } );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			container.appendChild( renderer.domElement );
+			
+			scene 		= new THREE.Scene();
+			
+			camera 		= new THREE.FlyCamera( { fov: 60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, movementSpeed: fCamMoveSpeed, rollSpeed: fCamLookSpeed, dragToLook : true } );//THREE.Camera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera.position.z = 100;
+			camera.position.y = 10; 
+						
+			pointLight = new THREE.PointLight( 0xffffff, 2, 5000 );
+			pointLight.position.x = 0;
+			pointLight.position.y = 300;
+			pointLight.position.z = 200;
+			scene.addLight( pointLight );
+			
+			scene.addLight( new THREE.AmbientLight( 0x646464 ) );
+			
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			container.appendChild( stats.domElement );
+			
+		
+			
+			var path = "textures/cube/pisa/";
+			var format = '.png';
+				var urls = [
+					path + 'px' + format, path + 'nx' + format,
+					path + 'py' + format, path + 'ny' + format,
+					path + 'pz' + format, path + 'nz' + format
+				];
+
+			var textureCube = THREE.ImageUtils.loadTextureCube( urls );
+			
+			THREE.SceneUtils.addPanoramaCubeWebGL( scene, 10000, textureCube );
+			
+			var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: textureCube } );
+			
+			for( x = 0; x < 5; ++x )
+			{
+				for( y = 0; y < 5; ++y )
+				{
+					for( z = 0; z < 5; ++z )
+					{
+					
+						var newMesh = new THREE.Mesh( new THREE.Sphere( 20, 32, 16 ), [ material ] );
+					
+						newMesh.position.x = x * 80;
+						newMesh.position.y = y * 80;
+						newMesh.position.z = z * 80;
+					
+						meshes.push( newMesh );
+						meshMaterials.push( material );
+					
+						scene.addObject( newMesh );
+					}
+				}
+			}
+			
+			postpro.renderTargetImg = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+			postpro.renderTargetDepth = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+			
+			var depthShader = AdditionalShaders[ 'depthLinear' ];
+			var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
+			depthUniforms[ "mNear" ].value = camera.near;
+			depthUniforms[ "mFar" ].value = camera.far;
+			depthUniforms[ "opacity" ].value = 1.0;
+			
+			postpro.matDepth = new THREE.MeshShaderMaterial( { 
+				uniforms: depthUniforms,
+				vertexShader: depthShader.vertexShader,
+				fragmentShader: depthShader.fragmentShader,
+				blending: THREE.AdditiveBlending,
+				transparent: false
+			} );
+			
+			
+			postpro.renderTargetBlur = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+			
+			var blurShader = AdditionalShaders[ 'depthOfField' ];
+			var blurUniforms = THREE.UniformsUtils.clone( blurShader.uniforms );
+			
+			blurUniforms[ "tDepth" ].texture = postpro.renderTargetDepth;
+			blurUniforms[ "tImg" ].texture = postpro.renderTargetImg;
+			blurUniforms[ "v2ImageSize" ].value = new THREE.Vector2( window.innerWidth, window.innerHeight );
+			
+			postpro.matBlur = new THREE.MeshShaderMaterial( {
+				uniforms: blurUniforms,
+				vertexShader: blurShader.vertexShader,
+				fragmentShader: blurShader.fragmentShader,
+				blending: THREE.AdditiveBlending,
+				transparent: true
+			} );
+			
+			postpro.blurScene = new THREE.Scene();
+			postpro.blurCamera = new THREE.Camera();
+			postpro.blurCamera.projectionMatrix = THREE.Matrix4.makeOrtho(  -window.innerWidth / 2, window.innerWidth / 2, window.innerHeight / 2, -window.innerHeight / 2, -10000, 10000 );
+			postpro.blurCamera.position.z = 100;
+			
+			postpro.quad = new THREE.Mesh( new THREE.Plane( 2, 2 ), postpro.matBlur );
+			postpro.quad.position.z = -100;
+			postpro.blurScene.addObject( postpro.quad );
+		}
+		
+		function setDepthMats()
+		{
+			for( i = 0; i < meshes.length; ++i )
+			{
+				meshes[ i ].materials = [ postpro.matDepth ];
+			}
+		}
+		
+		function setRegularMats()
+		{
+			for( i = 0; i < meshes.length; ++i )
+			{
+				meshes[ i ].materials = [ meshMaterials[ i ] ];
+			}
+		}
+	
+		function animate()
+		{
+			requestAnimationFrame( animate );
+			
+			render();
+			stats.update();
+		}
+		
+		function render()
+		{
+			renderer.clear();
+			
+			renderer.render( scene, camera );
+			
+			// setRegularMats();
+			// 				renderer.render( scene, camera, postpro.renderTargetImg, true );
+			// 				
+			// 				setDepthMats();
+			// 				renderer.render( scene, camera, postpro.renderTargetDepth, true );
+			// 				
+			// 				renderer.render( postpro.blurScene, postpro.blurCamera );
+			
+		}
+				
+		</script>
+
+	</body>
+</html>

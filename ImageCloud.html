@@ -1,0 +1,242 @@
+<!DOCTYPE HTML>
+<html lang="en">
+	<head>
+		<title>Demo</title>
+		<meta charset="utf-8">
+		<style type="text/css">
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+		</style>
+	</head>	
+		
+	<body>
+		<!-- <script src="js/Three.js"></script> -->
+		<script src="js/ThreeDebug.js"></script>
+		<script src="js/RequestAnimationFrame.js"></script>
+		<script src="js/Stats.js"></script>
+		<script src="js/AdditionalShaders.js"></script>
+		<script src="js/WallCamera.js"></script>
+		
+		<script type="text/javascript">
+		
+		var camera;
+		var scene;
+		var renderer;
+		var stats;
+		
+		var urls = [
+		 	"http://img.ly/system/uploads/000/775/293/large_image.jpg",
+			"http://img.ly/system/uploads/000/772/892/large_upload.jpg",
+			"http://img.ly/system/uploads/000/772/863/large_IMAG0167.jpg?1300612045",
+			"http://img.ly/system/uploads/000/772/830/large_image.jpg?1300610453",
+			"http://img.ly/system/uploads/000/742/408/large_image.jpg?1298974065",
+			"http://img.ly/system/uploads/000/736/579/large_image.jpg?1298642956",
+			"http://img.ly/system/uploads/000/734/654/large_image.jpg?1298547525",
+			"http://img.ly/system/uploads/000/734/640/large_Gravity.jpg?1298546846",
+			"http://img.ly/system/uploads/000/734/594/large_hotot.png?1298544998",
+			"http://img.ly/system/uploads/000/772/876/large_upload.jpg?1300612562",
+			"http://img.ly/system/uploads/000/734/670/large_5470806090_8e50d245fc.jpg?1298547964",
+			"http://img.ly/system/uploads/000/734/593/large_%E5%86%99%E7%9C%9F_210.jpg?1298544958",
+			"http://img.ly/system/uploads/000/732/987/large_image.jpg?1298462098",
+			"http://img.ly/system/uploads/000/734/644/large_DSCN4410.JPG?1298547057",
+			"http://img.ly/system/uploads/000/732/840/large_i-love-people.jpg?1298455948",
+			"http://img.ly/system/uploads/000/952/440/large_upload.jpg?1305116085",
+			"http://img.ly/system/uploads/000/019/868/large_who.jpg?1254314677",
+			"http://img.ly/system/uploads/000/922/188/large_upload.jpg?1304722069",
+			"http://img.ly/system/uploads/000/977/906/large_upload.jpg?1305425357",
+			"http://img.ly/system/uploads/000/071/706/large_fT4b4.jpg?1261670828",
+			"http://img.ly/system/uploads/000/058/461/large_mediafile.?1259852464",
+			"http://img.ly/system/uploads/000/778/368/large_image.jpg?1300897449",
+			"http://img.ly/system/uploads/000/146/481/large_U86P4T366D4995F11507DT20100304094124.jpg?1268028117",
+			"http://img.ly/system/uploads/000/072/837/large__.?1261791400",
+			"http://img.ly/system/uploads/000/922/561/large_upload.jpg?1304727022",
+			"http://img.ly/system/uploads/000/911/754/large_upload.jpg?1304589807",
+			"http://img.ly/system/uploads/000/676/999/large_upload.jpg?1295567091",
+			"http://img.ly/system/uploads/000/086/292/large_%E8%B0%B7%E6%AD%8C%E7%8C%AE%E8%8A%B12.jpg?1263362475",
+			"http://img.ly/system/uploads/000/246/347/large_image.jpg?1272577490",
+			"http://img.ly/system/uploads/000/876/806/large_upload.jpg?1304103678",
+			"http://img.ly/system/uploads/000/879/123/large_upload.jpg?1304134691",
+			"http://img.ly/system/uploads/000/584/749/large_upload.jpg?1290032669",
+			"http://img.ly/system/uploads/000/128/500/large_image.jpg?1266842066",
+			"http://img.ly/system/uploads/000/868/257/large_upload.jpg?1303991131",
+		];
+		
+		var imageMeshes = [];
+		var imageOffset = 10;
+		var imageRowCount = 10;
+		var loadingTexture;
+		var imageMat;
+
+		init();
+		animate();
+		
+		function init()
+		{
+			container = document.createElement('div');
+			document.body.appendChild(container);
+			
+			renderer	= new THREE.WebGLRenderer( { stencil: true, antialias: false, clearColor: 0xB5B5B5 } );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			container.appendChild( renderer.domElement );
+			
+			stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			container.appendChild( stats.domElement );
+					
+			scene 		= new THREE.Scene();
+			var cube = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
+			scene.addObject( cube );
+			
+			//camera 		= new THREE.FlyCamera( { fov: 60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, movementSpeed: 500, rollSpeed: 0.3, dragToLook : true } );//THREE.Camera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+			camera = new THREE.WallCamera( { fov:60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: renderer.domElement } );
+			camera.position.z = 1000;
+			camera.position.y = 10; 
+		
+			loadingTexture = THREE.ImageUtils.loadTexture( "textures/loading.jpg", new THREE.UVMapping(), onInitWithLoadingTexture );
+			
+			for( var i = 0; i < urls.length; ++i )
+			{
+				loadTexture( urls[ i ], new THREE.UVMapping(), applyNewImage, i );
+			}
+			
+		
+						
+		}
+		
+		function onInitWithLoadingTexture( img )
+		{
+			var imageSpacingX = img.width + imageOffset;
+			var imageSpacingY = img.height + imageOffset;
+			var imageStartPosX = -imageRowCount / 2.0 * imageSpacingX;
+			var imageStartPosY = ( urls.length / imageRowCount ) / 2;
+		
+			for( var i = 0; i < urls.length; ++i )
+			{
+				var mesh = new THREE.Mesh( new THREE.Plane( img.width, img.height ), new THREE.MeshBasicMaterial( { color: 0xffffff, map: loadingTexture } ) );
+				mesh.width = img.width;
+				mesh.height = img.height;
+								
+				imageMeshes.push( mesh );
+				scene.addObject( mesh );
+			}
+			
+			rebuildPositions();
+		}
+		
+		function loadTexture( path, mapping, callback, i )
+		{
+			var newImg = new Image(),
+				texture = new THREE.Texture( newImg, mapping, THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.LinearFilter, THREE.LinearMipMapLinearFilter );
+			
+			newImg.onload = function() { texture.needsUpdate = true; if( callback ) callback( i, texture ); };
+			newImg.src = path;
+			
+			return texture; 
+		}
+		
+		
+		function applyNewImage( iElement, texture )
+		{
+			var mesh = imageMeshes[ iElement ];
+			var fXscale = texture.image.width / mesh.width;
+			var fYscale = texture.image.height / mesh.height;
+			mesh.scale.x = fXscale;
+			mesh.scale.y = fYscale;
+			mesh.width = texture.image.width;
+			mesh.height = texture.image.height;
+			mesh.materials[0].map = texture;
+			//imageMeshes[ iElement ]
+			
+			rebuildPositions();
+		}
+		
+		
+		function rebuildPositions_line()
+		{
+			var currPosX = 0;
+			
+			for( var i = 0; i < imageMeshes.length; ++i )
+			{
+				var posY = 0;
+				var posX = 0;
+				var mesh = imageMeshes[ i ];
+				
+				var posXAdd = mesh.width + imageOffset;
+				
+				posX = currPosX + posXAdd - mesh.width / 2;
+				currPosX += posXAdd;
+				
+				mesh.position.x = posX;
+				mesh.position.y = posY;
+			}
+		}
+		
+		function rebuildPositions()
+		{
+			var currPosX = 0;
+			
+			var maxPosY = 0;
+			var currMaxPosY = 0;
+			
+			for( var i = 0; i < imageMeshes.length; ++i )
+			{
+				var posY = 0;
+				var posX = 0;
+				var mesh = imageMeshes[ i ];
+				
+				if( i  % imageRowCount == 0 )
+				{
+					currPosX = 0;
+					maxPosY = currMaxPosY;
+				}
+								
+				if( i >= imageRowCount )
+				{
+					var meshAbove = imageMeshes[ i - imageRowCount ];
+					posY = maxPosY - imageOffset - mesh.height / 2;
+				}
+				
+				var posXAdd = mesh.width + imageOffset;
+				
+				posX = currPosX + posXAdd - mesh.width / 2;
+				currPosX += posXAdd;
+				
+				if( posY - mesh.height / 2 < currMaxPosY )
+				{
+					currMaxPosY = posY - mesh.height / 2;
+				}
+															
+				mesh.position.x = posX;
+				mesh.position.y = posY;
+			}
+		}
+		
+			
+		function animate()
+		{
+			requestAnimationFrame( animate );
+			
+			camera.update();
+			render();
+			stats.update();
+		}
+		
+		function render()
+		{
+			renderer.clear();
+			renderer.render( scene, camera );
+		}
+		
+		
+		
+				
+		</script>
+
+	</body>
+</html>
