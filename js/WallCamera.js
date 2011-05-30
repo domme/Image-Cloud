@@ -14,24 +14,22 @@ THREE.WallCamera = function ( parameters )
 	var dragStarted = false;
 	var dragPosStart = new THREE.Vector2( 0, 0 );
 	var dragPos = new THREE.Vector2( 0, 0 );
-	var dragStartTime = new Date().getTime();
 	var heading = new THREE.Vector3( 0, 0, 0 );
+	var posChange = new THREE.Vector3( 0, 0, 0 );
 	var headingDecreaseRate = 0.1;
 	var headingDecrease = true;
 	var baseOrientation = new THREE.Quaternion();
 	var newOrientation = new THREE.Quaternion();
 	var newOrientationSet = false;
 	var lastNewOrientationSet = false;
-	var newOrientationStartTime = new Date().getTime();
 	var lastTime = new Date().getTime();
 	var orientSpeed = 1000; //1 second interpolation duration for orientation changes
 	var orientT = 0;
 	var maxHeading = 20;
-	var maxAngleDeg = 45;
+	var maxAngleDeg = 80;
 	var maxAngleRad = maxAngleDeg / 180 * Math.PI;
 	var currMat = this.matrix;
-	
-	var sineHalfMaxAngle = Math.sin( maxAngleRad / 2 );
+	var orientationDirForward = true;
 	
 	baseOrientation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), 0 );
 	newOrientation.copy( baseOrientation );
@@ -47,16 +45,19 @@ THREE.WallCamera = function ( parameters )
 
 	this.domElement = document;
 	
-	this.update = function() 
+	this.update = function( boundsMin, boundsMax ) 
 	{
 		var time = new Date().getTime();
 		var t = time - lastTime;
 		
+		this.position.x -= heading.x + posChange.x;
+		this.position.y += heading.y + posChange.y;
+		this.position.z += heading.z + posChange.z;
 		
-		this.position.x -= heading.x;
-		this.position.y += heading.y;
-		this.position.z += heading.z;
-		
+		posChange.x = 0;
+		posChange.y = 0;
+		posChange.z = 0;
+				
 		if( headingDecrease )
 		{
 			if( Math.abs( heading.x ) > 0.1 )
@@ -76,13 +77,29 @@ THREE.WallCamera = function ( parameters )
 		
 		if( newOrientationSet )
 		{
-			orientT += t;
+			if( orientationDirForward )
+			{
+				if( orientT < orientSpeed )
+					orientT += t;
+				else 
+					orientationDirForward = false;
+			}
 			
-			if( orientT < orientSpeed )
-				THREE.Quaternion.slerp( this.quaternion, newOrientation, this.quaternion, orientT / orientSpeed );	
-
 			else
-				newOrientationSet = false;
+			{
+				if( orientT > 0.001 )
+					orientT -= t;
+					
+				else
+				{
+					newOrientationSet = false;
+					orientationDirForward = true;
+					newOrientation.copy( baseOrientation );
+					orientT = 0;
+				}
+			}
+			
+			THREE.Quaternion.slerp( baseOrientation, newOrientation, this.quaternion, orientT / orientSpeed );
 		}
 		
 		lastNewOrientationSet = newOrientationSet;
@@ -91,6 +108,11 @@ THREE.WallCamera = function ( parameters )
 		
 		this.supr.update.call( this );
 	};
+	
+	this.flyTowardsMesh = function( mesh )
+	{
+		
+	}
 	
 	function checkHeading()
 	{
@@ -149,8 +171,8 @@ THREE.WallCamera = function ( parameters )
 		if( event.button == 0 ) //left mouse button
 		{
 			dragStarted = true;
-			dragPosStart.x = event.x;
-			dragPosStart.y = event.y;
+			dragPosStart.x = event.clientX;
+			dragPosStart.y = event.clientY;
 			
 			heading.x = 0;
 			heading.y = 0;
@@ -164,11 +186,13 @@ THREE.WallCamera = function ( parameters )
 	{
 		if( dragStarted )
 		{
-			var dragSpeedX = event.x - dragPosStart.x;
-			var dragSpeedY = event.y - dragPosStart.y;
+			var dragSpeedX = event.clientX - dragPosStart.x;
+			var dragSpeedY = event.clientY - dragPosStart.y;
 			
 			heading.x = dragSpeedX;
 			heading.y = dragSpeedY;		
+			
+			orientSpeed = heading.length() * 5;
 			
 			var orientX = new THREE.Quaternion();
 			var orientY = new THREE.Quaternion();
@@ -188,10 +212,12 @@ THREE.WallCamera = function ( parameters )
 			}
 			
 			newOrientationSet = true;
-			newOrientation.multiply( orientX, orientY );
+			var orient = new THREE.Quaternion();
+			orient.multiply( orientY, orientX );
+			newOrientation.multiplySelf( orient );
 			
-			dragPosStart.x = event.x;
-			dragPosStart.y = event.y;
+			dragPosStart.x = event.clientX;
+			dragPosStart.y = event.clientY;
 			
 			checkHeading();
 		}
@@ -207,7 +233,7 @@ THREE.WallCamera = function ( parameters )
 	
 	function onMouseWheel( event )
 	{
-		heading.z = -event.wheelDeltaY / 100;
+		posChange.z = -event.wheelDeltaY;
 		
 		checkHeading();
 	};

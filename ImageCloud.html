@@ -71,6 +71,16 @@
 		var imageRowCount = 10;
 		var loadingTexture;
 		var imageMat;
+		var imageBoundsMin = new THREE.Vector3();
+		var imageBoundsMax = new THREE.Vector3();
+		var imagePositionMode = 1;
+		
+		var mouseScenePos = new THREE.Vector3();
+		var mouseRay = new THREE.Ray();
+		
+		var lastPickedMesh = null;
+		var pickedMesh = null;
+		var pickScaleIncrease = 1.2;
 
 		init();
 		animate();
@@ -88,6 +98,8 @@
 			stats.domElement.style.position = 'absolute';
 			stats.domElement.style.top = '0px';
 			container.appendChild( stats.domElement );
+			
+		
 					
 			scene 		= new THREE.Scene();
 			var cube = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
@@ -103,10 +115,10 @@
 			for( var i = 0; i < urls.length; ++i )
 			{
 				loadTexture( urls[ i ], new THREE.UVMapping(), applyNewImage, i );
-			}
+			}		
 			
-		
-						
+			container.onmousemove = onMouseMove;
+			container.onmousedown = onMouseClick;
 		}
 		
 		function onInitWithLoadingTexture( img )
@@ -127,6 +139,79 @@
 			}
 			
 			rebuildPositions();
+		}
+		
+		function onMouseMove( event )
+		{
+			mouseScenePos.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+			mouseScenePos.y = ( ( window.innerHeight - event.clientY ) / window.innerHeight ) * 2 - 1;
+			mouseScenePos.z = camera.near;
+			
+			handleMousePick();
+			
+			if( lastPickedMesh != null && pickedMesh != lastPickedMesh )
+			{
+				lastPickedMesh.scale.x /= pickScaleIncrease;
+				lastPickedMesh.scale.y /= pickScaleIncrease;
+			}
+			
+			if( pickedMesh != null && pickedMesh != lastPickedMesh )
+			{
+				pickedMesh.scale.x *= pickScaleIncrease;
+				pickedMesh.scale.y *= pickScaleIncrease;
+			}
+			
+			lastPickedMesh = pickedMesh;
+		}
+		
+		function handleMousePick()
+		{
+			var viewProjI = new THREE.Matrix4();
+			viewProjI.identity();
+			var projI = new THREE.Matrix4();
+			var viewI = new THREE.Matrix4();
+			THREE.Matrix4.makeInvert( camera.projectionMatrix, projI );
+			THREE.Matrix4.makeInvert( camera.matrixWorldInverse, viewI );
+			viewProjI.multiply( viewI, projI );
+			
+			var rayNear = new THREE.Vector4();
+			
+			rayNear.x = mouseScenePos.x;
+			rayNear.y = mouseScenePos.y;
+			rayNear.z = 0;
+			rayNear.w = 1;
+			
+			rayNear = viewProjI.multiplyVector4( rayNear );
+							
+			mouseRay.origin.copy( camera.position );
+            
+			mouseRay.direction.x = rayNear.x - camera.position.x;
+			mouseRay.direction.y = rayNear.y - camera.position.y;
+			mouseRay.direction.z = rayNear.z - camera.position.z;
+			mouseRay.direction.normalize();
+            
+            
+			var intersects = mouseRay.intersectScene( scene );
+			if( intersects.length > 0 )
+			{
+				if( intersects[ 0 ].object !== null )
+				{
+					pickedMesh = intersects[ 0 ].object;
+				}
+			}
+			
+			else
+			{
+				pickedMesh = null;
+			}
+		}		
+		
+		function onMouseClick( event )
+		{
+			if( pickedMesh !== null )
+			{
+				camera.flyTowardsMesh( pickedMesh );
+			}
 		}
 		
 		function loadTexture( path, mapping, callback, i )
@@ -157,9 +242,49 @@
 		}
 		
 		
+		function rebuildPositions()
+		{
+			switch (imagePositionMode)
+			{
+				case 0:
+					rebuildPositions_line();
+				break;
+				
+				case 1:
+					rebuildPositions_2Dgrid();
+				break;
+				
+				default:
+					rebuildPositions_2dgrid();
+				break;
+			}
+		}
+		
+		function updateBounds( mesh, boundMin, boundMax )
+		{
+			if( mesh.position.x < boundMin.x )
+				boundMin.x = mesh.position.x;
+			if( mesh.position.x > boundMax.x )
+				boundMax.x = mesh.position.x;
+				
+			if( mesh.position.y < boundMin.y )
+				boundMin.y = mesh.position.y;
+			if( mesh.position.y > boundMax.y )
+				boundMax.y = mesh.position.y;
+				
+			if( mesh.position.z < boundMin.z )
+				boundMin.z = mesh.position.z;
+			if( mesh.position.z > boundMax.z )
+				boundMax.z = mesh.position.z;
+		}
+		
+				
 		function rebuildPositions_line()
 		{
 			var currPosX = 0;
+			
+			var boundMin = new THREE.Vector3();
+			var boundMax = new THREE.Vector3();
 			
 			for( var i = 0; i < imageMeshes.length; ++i )
 			{
@@ -174,15 +299,31 @@
 				
 				mesh.position.x = posX;
 				mesh.position.y = posY;
+				
+				updateBounds( mesh, boundMin, boundMax );
 			}
+			
+			boundMin.x -= imageMeshes[ 0 ].width / 2;
+			boundMax.x += imageMeshes[ imageMeshes.length - 1 ].width / 2;
+			
+			for( var i = 0; i < imageMeshes.length; ++i )
+			{
+				imageMeshes[ i ].position.x -= ( boundMax.x - boundMin.x ) / 2;
+			}
+			
+			imageBoundsMin.copy( boundMin );
+			imageBoundsMax.copy( boundMax );
 		}
 		
-		function rebuildPositions()
+		function rebuildPositions_2Dgrid()
 		{
 			var currPosX = 0;
 			
 			var maxPosY = 0;
 			var currMaxPosY = 0;
+			
+			var boundMin = new THREE.Vector3();
+			var boundMax = new THREE.Vector3();
 			
 			for( var i = 0; i < imageMeshes.length; ++i )
 			{
@@ -214,17 +355,33 @@
 															
 				mesh.position.x = posX;
 				mesh.position.y = posY;
+				
+				updateBounds( mesh, boundMin, boundMax );
 			}
+			
+			for( var i = 0; i < imageMeshes.length; ++i )
+			{
+				imageMeshes[ i ].position.x -= ( boundMax.x - boundMin.x ) / 2;
+				imageMeshes[ i ].position.y += ( boundMax.y - boundMin.y ) / 2;
+			}
+			
+			imageBoundsMin.copy( boundMin );
+			imageBoundsMax.copy( boundMax );
 		}
 		
 			
 		function animate()
 		{
 			requestAnimationFrame( animate );
-			
-			camera.update();
-			render();
+			camera.update( imageBoundsMin, imageBoundsMax );
 			stats.update();
+			
+			
+
+			
+			
+			
+			render();
 		}
 		
 		function render()
