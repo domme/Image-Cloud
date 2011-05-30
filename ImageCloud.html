@@ -20,7 +20,9 @@
 		<script src="js/RequestAnimationFrame.js"></script>
 		<script src="js/Stats.js"></script>
 		<script src="js/AdditionalShaders.js"></script>
+		<script src="js/Animator.js"></script>
 		<script src="js/WallCamera.js"></script>
+		
 		
 		<script type="text/javascript">
 		
@@ -28,6 +30,7 @@
 		var scene;
 		var renderer;
 		var stats;
+		var animator;
 		
 		var urls = [
 		 	"http://img.ly/system/uploads/000/775/293/large_image.jpg",
@@ -67,7 +70,7 @@
 		];
 		
 		var imageMeshes = [];
-		var imageOffset = 10;
+		var imageOffset = 25;
 		var imageRowCount = 10;
 		var loadingTexture;
 		var imageMat;
@@ -80,7 +83,10 @@
 		
 		var lastPickedMesh = null;
 		var pickedMesh = null;
-		var pickScaleIncrease = 1.2;
+		var flyTargetMesh = null;
+		var pickScaleIncrease = 1.1;
+		
+		var button_togglePositions;
 
 		init();
 		animate();
@@ -98,7 +104,8 @@
 			stats.domElement.style.position = 'absolute';
 			stats.domElement.style.top = '0px';
 			container.appendChild( stats.domElement );
-			
+		
+			animator = new Animator();
 		
 					
 			scene 		= new THREE.Scene();
@@ -107,8 +114,12 @@
 			
 			//camera 		= new THREE.FlyCamera( { fov: 60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, movementSpeed: 500, rollSpeed: 0.3, dragToLook : true } );//THREE.Camera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
 			camera = new THREE.WallCamera( { fov:60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: renderer.domElement } );
-			camera.position.z = 1000;
+			camera.position.z = 1500;
 			camera.position.y = 10; 
+			
+			camera.farHeight = 2 * ( Math.tan( camera.fov / 2 ) * camera.far );
+			camera.farWidth = camera.aspect * camera.farHeight;
+			camera.fovHorizontal = 2 *( Math.atan( ( camera.farWidth / 2 ) / camera.far ) );
 		
 			loadingTexture = THREE.ImageUtils.loadTexture( "textures/loading.jpg", new THREE.UVMapping(), onInitWithLoadingTexture );
 			
@@ -119,6 +130,7 @@
 			
 			container.onmousemove = onMouseMove;
 			container.onmousedown = onMouseClick;
+			container.onmouseup = onMouseUp;
 		}
 		
 		function onInitWithLoadingTexture( img )
@@ -210,7 +222,32 @@
 		{
 			if( pickedMesh !== null )
 			{
-				camera.flyTowardsMesh( pickedMesh );
+				flyTargetMesh = pickedMesh;
+			}
+		}
+		
+		function onMouseUp( event )
+		{
+			if( pickedMesh == flyTargetMesh && flyTargetMesh != null )
+			{
+				var endPos = new THREE.Vector3();
+				endPos.copy( flyTargetMesh.position );
+				var zVert = flyTargetMesh.height / 2 * Math.tan( camera.fov / 2 );
+				var zHor = flyTargetMesh.width / 2 * Math.tan( camera.fovHorizontal / 2 );
+				
+				endPos.z -= Math.max( zVert / 2, zHor / 2 );
+				
+				animator.AddAnimation( { 
+					interpolationType: "weighted average", 
+					dataType: "Vector3", 
+					startValue: camera.position, 
+					endValue: endPos, 
+					animValue: camera.position,
+					duration: 1000,
+					repetition: "oneShot"
+				  } );
+				
+				flyTargetMesh = null;
 			}
 		}
 		
@@ -281,6 +318,7 @@
 				
 		function rebuildPositions_line()
 		{
+			renderer.setDepthTest( false );
 			var currPosX = 0;
 			
 			var boundMin = new THREE.Vector3();
@@ -317,6 +355,7 @@
 		
 		function rebuildPositions_2Dgrid()
 		{
+			//renderer.setDepthTest( false );
 			var currPosX = 0;
 			
 			var maxPosY = 0;
@@ -377,10 +416,7 @@
 			stats.update();
 			
 			
-
-			
-			
-			
+			animator.animate();
 			render();
 		}
 		

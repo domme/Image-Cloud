@@ -12,6 +12,7 @@ THREE.WallCamera = function ( parameters )
 	THREE.Camera.call( this, parameters.fov, parameters.aspect, parameters.near, parameters.far );
 	
 	var dragStarted = false;
+	var lastDragStarted = false;
 	var dragPosStart = new THREE.Vector2( 0, 0 );
 	var dragPos = new THREE.Vector2( 0, 0 );
 	var heading = new THREE.Vector3( 0, 0, 0 );
@@ -26,10 +27,13 @@ THREE.WallCamera = function ( parameters )
 	var orientSpeed = 1000; //1 second interpolation duration for orientation changes
 	var orientT = 0;
 	var maxHeading = 20;
-	var maxAngleDeg = 80;
+	var maxAngleDeg = 60;
 	var maxAngleRad = maxAngleDeg / 180 * Math.PI;
 	var currMat = this.matrix;
 	var orientationDirForward = true;
+	
+	var lastMouseDown = false;
+
 	
 	baseOrientation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), 0 );
 	newOrientation.copy( baseOrientation );
@@ -70,41 +74,28 @@ THREE.WallCamera = function ( parameters )
 				heading.z = heading.z - sign( heading.y ) * headingDecreaseRate;
 		}
 		
-		if( newOrientationSet && !lastNewOrientationSet )
+		if( dragStarted )
 		{
-			orientT = 0;
+			this.quaternion.copy( baseOrientation );
+			this.quaternion.multiplySelf( newOrientation );
 		}
 		
-		if( newOrientationSet )
+		if( !dragStarted )
 		{
-			if( orientationDirForward )
+			orientT += t;
+			
+			if( orientT < orientSpeed )
 			{
-				if( orientT < orientSpeed )
-					orientT += t;
-				else 
-					orientationDirForward = false;
+				THREE.Quaternion.slerp( this.quaternion, baseOrientation, this.quaternion, orientT / 2000 );
 			}
 			
 			else
-			{
-				if( orientT > 0.001 )
-					orientT -= t;
-					
-				else
-				{
-					newOrientationSet = false;
-					orientationDirForward = true;
-					newOrientation.copy( baseOrientation );
-					orientT = 0;
-				}
-			}
-			
-			THREE.Quaternion.slerp( baseOrientation, newOrientation, this.quaternion, orientT / orientSpeed );
+				newOrientation.copy( baseOrientation );
 		}
 		
 		lastNewOrientationSet = newOrientationSet;
 		lastTime = time;
-		//currMat = this.matrix;
+		lastDragStarted = dragStarted;
 		
 		this.supr.update.call( this );
 	};
@@ -171,14 +162,22 @@ THREE.WallCamera = function ( parameters )
 		if( event.button == 0 ) //left mouse button
 		{
 			dragStarted = true;
-			dragPosStart.x = event.clientX;
-			dragPosStart.y = event.clientY;
 			
-			heading.x = 0;
-			heading.y = 0;
-			heading.z = 0;
+			
+			if( !lastMouseDown )
+			{	
+				dragPosStart.x = event.clientX;
+				dragPosStart.y = event.clientY;
+				
+				heading.x = 0;
+				heading.y = 0;
+				heading.z = 0;
+			}
+			
+			newOrientation.copy( baseOrientation );
 			
 			dragStartTime = new Date().getTime();
+			lastMouseDown = true;
 		}
 	};
 	
@@ -189,10 +188,8 @@ THREE.WallCamera = function ( parameters )
 			var dragSpeedX = event.clientX - dragPosStart.x;
 			var dragSpeedY = event.clientY - dragPosStart.y;
 			
-			heading.x = dragSpeedX;
-			heading.y = dragSpeedY;		
-			
-			orientSpeed = heading.length() * 5;
+			heading.x += dragSpeedX / 10;
+			heading.y += dragSpeedY / 10;		
 			
 			var orientX = new THREE.Quaternion();
 			var orientY = new THREE.Quaternion();
@@ -225,9 +222,12 @@ THREE.WallCamera = function ( parameters )
 	
 	function onMouseUp( event )
 	{
+
 		if( event.button == 0 && dragStarted )
 		{
 			dragStarted = false;
+			orientT = 0;
+			lastMouseDown = false;
 		}
 	};
 	
