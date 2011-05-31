@@ -10,13 +10,13 @@
 			<key>filename</key>
 			<string>demo.html</string>
 			<key>lastUsed</key>
-			<date>2011-05-29T21:13:21Z</date>
+			<date>2011-05-30T22:14:08Z</date>
 		</dict>
 		<dict>
 			<key>filename</key>
 			<string>ImageCloud.html</string>
 			<key>lastUsed</key>
-			<date>2011-05-29T21:31:46Z</date>
+			<date>2011-05-30T22:14:08Z</date>
 			<key>selected</key>
 			<true/>
 		</dict>
@@ -24,7 +24,7 @@
 			<key>filename</key>
 			<string>ImageFlow_Demo.html</string>
 			<key>lastUsed</key>
-			<date>2011-05-29T13:39:37Z</date>
+			<date>2011-05-30T21:34:31Z</date>
 		</dict>
 		<dict>
 			<key>children</key>
@@ -33,13 +33,19 @@
 					<key>filename</key>
 					<string>js/WallCamera.js</string>
 					<key>lastUsed</key>
-					<date>2011-05-29T21:13:18Z</date>
+					<date>2011-05-30T22:14:08Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/AdditionalShaders.js</string>
 					<key>lastUsed</key>
-					<date>2011-05-26T19:38:50Z</date>
+					<date>2011-05-30T21:23:47Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>js/Animator.js</string>
+					<key>lastUsed</key>
+					<date>2011-05-30T21:56:43Z</date>
 				</dict>
 			</array>
 			<key>expanded</key>
@@ -175,7 +181,7 @@
 					<key>filename</key>
 					<string>../three.js/examples/webgl_flycamera_earth.html</string>
 					<key>lastUsed</key>
-					<date>2011-05-27T09:05:01Z</date>
+					<date>2011-05-30T17:14:01Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -302,6 +308,8 @@
 				<dict>
 					<key>filename</key>
 					<string>../three.js/examples/webgl_materials_shaders.html</string>
+					<key>lastUsed</key>
+					<date>2011-05-30T20:13:45Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -318,6 +326,8 @@
 				<dict>
 					<key>filename</key>
 					<string>../three.js/examples/webgl_morphtargets.html</string>
+					<key>lastUsed</key>
+					<date>2011-05-30T17:10:28Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -350,10 +360,14 @@
 				<dict>
 					<key>filename</key>
 					<string>../three.js/examples/webgl_postprocessing_dof.html</string>
+					<key>lastUsed</key>
+					<date>2011-05-30T17:08:59Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>../three.js/examples/webgl_postprocessing.html</string>
+					<key>lastUsed</key>
+					<date>2011-05-30T17:11:12Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -362,6 +376,8 @@
 				<dict>
 					<key>filename</key>
 					<string>../three.js/examples/webgl_rtt.html</string>
+					<key>lastUsed</key>
+					<date>2011-05-30T17:10:41Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -407,7 +423,7 @@
 		</dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
-	<integer>244</integer>
+	<integer>319</integer>
 	<key>metaData</key>
 	<dict>
 		<key>../three.js/examples/webgl_collisions_normal.html</key>
@@ -429,30 +445,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>52</integer>
+				<integer>33</integer>
 				<key>line</key>
-				<integer>115</integer>
+				<integer>112</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>71</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>41</integer>
-				<key>line</key>
-				<integer>115</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>52</integer>
-				<key>line</key>
-				<integer>115</integer>
-			</dict>
+			<integer>65</integer>
 		</dict>
 		<key>../three.js/examples/webgl_geometry_dynamic.html</key>
 		<dict>
@@ -462,6 +462,76 @@
 				<integer>26</integer>
 				<key>line</key>
 				<integer>31</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>../three.js/examples/webgl_materials_shaders.html</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>45</integer>
+				<key>line</key>
+				<integer>221</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>200</integer>
+		</dict>
+		<key>../three.js/examples/webgl_morphtargets.html</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>../three.js/examples/webgl_postprocessing.html</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>../three.js/examples/webgl_postprocessing_dof.html</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>254</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>21</integer>
+		</dict>
+		<key>../three.js/examples/webgl_rtt.html</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -531,30 +601,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>10</integer>
+				<integer>44</integer>
 				<key>line</key>
-				<integer>114</integer>
+				<integer>7</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>84</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>1</integer>
-				<key>line</key>
-				<integer>114</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>16</integer>
-				<key>line</key>
-				<integer>114</integer>
-			</dict>
+			<integer>6</integer>
 		</dict>
 		<key>../three.js/src/core/Object3D.js</key>
 		<dict>
@@ -575,14 +629,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>22</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>54</integer>
+				<integer>196</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>162</integer>
+			<integer>161</integer>
 		</dict>
 		<key>../three.js/src/core/Ray.js</key>
 		<dict>
@@ -659,16 +713,46 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
+				<integer>24</integer>
+				<key>line</key>
+				<integer>30</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>19</integer>
+				<key>line</key>
+				<integer>30</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>24</integer>
+				<key>line</key>
+				<integer>30</integer>
+			</dict>
+		</dict>
+		<key>../three.js/src/extras/animation/AnimationHandler.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>7</integer>
+				<integer>46</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>392</integer>
+			<integer>0</integer>
 		</dict>
-		<key>../three.js/src/extras/animation/AnimationHandler.js</key>
+		<key>../three.js/src/extras/animation/AnimationMorphTarget.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
@@ -680,7 +764,7 @@
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>72</integer>
+			<integer>0</integer>
 		</dict>
 		<key>../three.js/src/extras/cameras/FlyCamera.js</key>
 		<dict>
@@ -701,14 +785,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>23</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>87</integer>
+				<integer>101</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>81</integer>
+			<integer>90</integer>
 		</dict>
 		<key>../three.js/src/extras/cameras/QuakeCamera.js</key>
 		<dict>
@@ -729,29 +813,29 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>7</integer>
+				<integer>1</integer>
 				<key>line</key>
-				<integer>116</integer>
+				<integer>292</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>-1</integer>
+			<integer>232</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>61</integer>
 				<key>line</key>
-				<integer>116</integer>
+				<integer>292</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>7</integer>
+				<integer>1</integer>
 				<key>line</key>
-				<integer>116</integer>
+				<integer>292</integer>
 			</dict>
 		</dict>
 		<key>../three.js/src/extras/geometries/Cube.js</key>
@@ -873,12 +957,12 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>0</integer>
+				<integer>33</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>15</integer>
+			<integer>0</integer>
 		</dict>
 		<key>../three.js/src/materials/MeshShaderMaterial.js</key>
 		<dict>
@@ -1025,29 +1109,29 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>15</integer>
 				<key>line</key>
-				<integer>3085</integer>
+				<integer>2943</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>3046</integer>
+			<integer>2807</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>83</integer>
+				<integer>10</integer>
 				<key>line</key>
-				<integer>3085</integer>
+				<integer>2943</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>22</integer>
 				<key>line</key>
-				<integer>3085</integer>
+				<integer>2943</integer>
 			</dict>
 		</dict>
 		<key>ImageCloud.html</key>
@@ -1055,28 +1139,28 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>47</integer>
+				<integer>16</integer>
 				<key>line</key>
-				<integer>153</integer>
+				<integer>466</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>84</integer>
+			<integer>427</integer>
 		</dict>
 		<key>ImageFlow_Demo.html</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>17</integer>
+				<integer>3</integer>
 				<key>line</key>
-				<integer>122</integer>
+				<integer>97</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>63</integer>
+			<integer>8</integer>
 		</dict>
 		<key>demo.html</key>
 		<dict>
@@ -1092,40 +1176,58 @@
 			<key>firstVisibleLine</key>
 			<integer>87</integer>
 		</dict>
+		<key>js/AdditionalShaders.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>3</integer>
+				<key>line</key>
+				<integer>75</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>19</integer>
+		</dict>
+		<key>js/Animator.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
 		<key>js/WallCamera.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>41</integer>
+				<integer>30</integer>
 				<key>line</key>
-				<integer>239</integer>
+				<integer>190</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>187</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>36</integer>
-				<key>line</key>
-				<integer>239</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>45</integer>
-				<key>line</key>
-				<integer>239</integer>
-			</dict>
+			<integer>192</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
 	<array>
 		<string>ImageCloud.html</string>
+		<string>../three.js/examples/webgl_materials_shaders.html</string>
+		<string>../three.js/examples/webgl_morphtargets.html</string>
+		<string>../three.js/examples/webgl_rtt.html</string>
+		<string>../three.js/examples/webgl_postprocessing.html</string>
+		<string>js/Animator.js</string>
+		<string>js/AdditionalShaders.js</string>
 		<string>../three.js/src/core/Face4.js</string>
 		<string>js/WallCamera.js</string>
 		<string>../three.js/src/core/Ray.js</string>
@@ -1133,7 +1235,9 @@
 		<string>demo.html</string>
 		<string>../three.js/src/core/Vector2.js</string>
 		<string>../three.js/src/extras/animation/Animation.js</string>
+		<string>../three.js/examples/webgl_postprocessing_dof.html</string>
 		<string>../three.js/src/extras/animation/AnimationHandler.js</string>
+		<string>../three.js/src/extras/animation/AnimationMorphTarget.js</string>
 		<string>../three.js/src/extras/cameras/FlyCamera.js</string>
 		<string>../three.js/src/extras/cameras/PathCamera.js</string>
 		<string>../three.js/src/extras/cameras/QuakeCamera.js</string>
@@ -1166,6 +1270,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{57, 0}, {940, 1178}}</string>
+	<string>{{46, 0}, {940, 1178}}</string>
 </dict>
 </plist>

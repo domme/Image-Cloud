@@ -11,6 +11,7 @@
  *	duration : <float>
  *  customInterpolator : <function> //if set, uses this function as interpolator instead of one of the "interpolation" types
  *  repetition : <string> { "oneShot" | "loop" | "fourthAndBack" }
+ *	callback : <function> //is called when animation is finished ( for "oneShot" and "fourthAndBack" only! )
  * }
  */
 
@@ -37,7 +38,9 @@ function weightedAverage( t )
 
 function Animator()
 {
+	this.firstUpdate = true;
 	this.lastTime = new Date().getTime();
+	
 	this.currAnimID = 0;
 	
 	this.animations = [];
@@ -86,6 +89,7 @@ function Animator()
 		
 		anim.startValue.copy( animationInfo.startValue );
 		anim.endValue.copy( animationInfo.endValue );
+		anim.callback = animationInfo.callback;
 		
 		anim.animValue 		= animationInfo.animValue;
 		anim.duration 		= animationInfo.duration		!= undefined ? animationInfo.duration : 1000;
@@ -122,6 +126,12 @@ function Animator()
 	
 	this.animate = function()
 	{
+		if( this.firstUpdate )
+		{
+			this.lastTime = new Date().getTime();
+			this.firstUpdate = false;
+		}
+			
 		var time = new Date().getTime();
 		var t_delta = time - this.lastTime;
 		var trash = [];
@@ -136,6 +146,7 @@ function Animator()
 			{
 				if( anim.repetition == "oneShot" )
 				{
+					if( anim.callback ) anim.callback();
 					trash.push( anim );
 					continue;
 				}
@@ -152,6 +163,8 @@ function Animator()
 					t = 2 - t;
 					if( t < 0 )
 					{
+						if( anim.callback )
+							anim.callback();
 						trash.push( anim );
 						continue;
 					}

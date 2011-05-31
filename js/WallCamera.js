@@ -71,7 +71,7 @@ THREE.WallCamera = function ( parameters )
 				heading.y = heading.y - sign( heading.y ) * headingDecreaseRate;
 			
 			if( Math.abs( heading.z ) > 0.1 )
-				heading.z = heading.z - sign( heading.y ) * headingDecreaseRate;
+				heading.z = heading.z - sign( heading.z ) * headingDecreaseRate;
 		}
 		
 		if( dragStarted )
@@ -233,21 +233,18 @@ THREE.WallCamera = function ( parameters )
 	
 	function onMouseWheel( event )
 	{
-		posChange.z = -event.wheelDeltaY;
-		
+		if( sign( event.wheelDeltaY ) != sign( heading.z ) )
+			heading.z = 0;
+			
+		heading.z -= event.wheelDeltaY / 10;
 		checkHeading();
 	};
 
 	
-	// this.domElement.addEventListener( 'contextmenu', function ( event ) { event.preventDefault(); }, false );
-	// 
-	 this.domElement.addEventListener( 'mousemove', onMouseMove, false );
+	this.domElement.addEventListener( 'mousemove', onMouseMove, false );
 	this.domElement.addEventListener( 'mousedown', onMouseDown, false );
 	this.domElement.addEventListener( 'mouseup', onMouseUp, false );
 	this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
-	// this.domElement.addEventListener( 'keydown', onKeyDown, false );
-	// this.domElement.addEventListener( 'keyup', onKeyUp, false );	
-
 };
 
 THREE.WallCamera.prototype = new THREE.Camera();
