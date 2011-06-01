@@ -100,10 +100,6 @@ THREE.WallCamera = function ( parameters )
 		this.supr.update.call( this );
 	};
 	
-	this.flyTowardsMesh = function( mesh )
-	{
-		
-	}
 	
 	function checkHeading()
 	{

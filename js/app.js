@@ -1,8 +1,10 @@
 	var camera;
 	var scene;
+	var gui = {};
 	var renderer;
 	var stats;
 	var animator;
+	var postpro = {};
 	
 	var urls = [
 	 	"http://img.ly/system/uploads/000/775/293/large_image.jpg",
@@ -42,6 +44,8 @@
 	];
 	
 	var imageMeshes = [];
+	var imageMats = [];
+	var depthMat;
 	var imageOffset = 25;
 	var imageRowCount = 10;
 	var cameraGridBaseOffset = 2000;
@@ -58,7 +62,9 @@
 	var pickedMesh = null;
 	var viewedMesh = null;
 	var pickScaleIncrease = 1.1;
-	var lastClickTime = new Date().getTime();
+	var postpro;
+	var colorRT;
+	var depthRT;
 	
 	var imgMode = false;
 	
@@ -69,8 +75,9 @@
 		container = document.createElement('div');
 		document.body.appendChild(container);
 		
-		renderer	= new THREE.WebGLRenderer( { stencil: true, antialias: false, clearColor: 0xB5B5B5 } );
+		renderer	= new THREE.WebGLRenderer( { stencil: true, antialias: false, clearColor: 0xffffff } );
 		renderer.setSize( window.innerWidth, window.innerHeight );
+		renderer.autoClear = false;
 		container.appendChild( renderer.domElement );
 		
 		stats = new Stats();
@@ -79,29 +86,72 @@
 		container.appendChild( stats.domElement );
 	
 		animator = new Animator();
+		
+		camera = new THREE.WallCamera( { fov:60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: renderer.domElement } );
+		camera.position.z = 2000;
+		camera.position.y = 10; 
+
+		camera.farHeight = 2 * ( Math.tan( camera.fov / 2 ) * camera.far );
+		camera.farWidth = camera.aspect * camera.farHeight;
+		camera.fovHorizontal = 2 *( Math.atan( ( camera.farWidth / 2 ) / camera.far ) );
 	
 		scene 		= new THREE.Scene();
 		var cube = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
 		scene.addObject( cube );
 		
-		camera = new THREE.WallCamera( { fov:60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: renderer.domElement } );
-		camera.position.z = 2000;
-		camera.position.y = 10; 
+		gui.scene = new THREE.Scene();
+		gui.camera = new THREE.Camera();
+		gui.camera.projectionMatrix = THREE.Matrix4.makePerspective( 30, camera.aspect, camera.near, camera.far );
+		gui.camera.position.z = 100;
 		
-		camera.farHeight = 2 * ( Math.tan( camera.fov / 2 ) * camera.far );
-		camera.farWidth = camera.aspect * camera.farHeight;
-		camera.fovHorizontal = 2 *( Math.atan( ( camera.farWidth / 2 ) / camera.far ) );
+		
+		var cubeToggle = new THREE.Mesh( new THREE.Cube( 4, 4, 4 ), new THREE.MeshLambertMaterial( { color: 0x8098E0, opacity: 0.8 } ) );
+		cubeToggle.position.x = window.innerWidth / 17;
+		cubeToggle.position.y = -window.innerHeight / 18;
+		cubeToggle.onMouseClick = togglePerspective;
+		cubeToggle.useQuaternion = true;
+		gui.scene.addObject( cubeToggle );
+		var guiDirLight = new THREE.DirectionalLight( 0xffffff, 1.0, 5000, false );
+		guiDirLight.position.x = -1;
+		guiDirLight.position.y = 1;
+		guiDirLight.position.z = 100;
+		gui.scene.addLight( guiDirLight );
+		
+		var endRotation = new THREE.Quaternion();
+		var startRotation = new THREE.Quaternion();
+		startRotation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), 0.01 );
+		cubeToggle.quaternion.copy( startRotation );
+		endRotation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI * 2 );
+		
+		 animator.AddAnimation( { 
+			 		 		interpolationType: "linear", 
+			 		 		dataType: "Quaternion", 
+			 		 		startValue: cubeToggle.quaternion, 
+			 		 		endValue: endRotation, 
+			 		 		animValue: cubeToggle.quaternion,
+			 		 		duration: 4000,
+			 		 		repetition: "loop"
+			 		 	  } );
+	
+	
+		colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+		depthRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+		postpro = new Postpro( colorRT, depthRT );
 	
 		loadingTexture = THREE.ImageUtils.loadTexture( "textures/loading.jpg", new THREE.UVMapping(), onInitWithLoadingTexture );
+		
+		depthMat = new THREE.MeshDepthMaterial();
 		
 		for( var i = 0; i < urls.length; ++i )
 		{
 			loadTexture( urls[ i ], new THREE.UVMapping(), applyNewImage, i );
-		}		
+		}	
 		
 		container.onmousemove = onMouseMove;
 		container.onmousedown = onMouseUp;
 		container.onmouseup = onMouseUp;
+		container.onclick = onMouseClick;
+		
 		container.ondblclick = onDoubleClick;
 		document.body.onkeyup = onKeyUp;
 	}
@@ -115,11 +165,13 @@
 	
 		for( var i = 0; i < urls.length; ++i )
 		{
-			var mesh = new THREE.Mesh( new THREE.Plane( img.width, img.height ), new THREE.MeshBasicMaterial( { color: 0xffffff, map: loadingTexture } ) );
+			var mat = new THREE.MeshBasicMaterial( { color: 0xffffff, map: loadingTexture } );
+			var mesh = new THREE.Mesh( new THREE.Plane( img.width, img.height ), mat );
 			mesh.width = img.width;
 			mesh.height = img.height;
 							
 			imageMeshes.push( mesh );
+			imageMats.push( mesh.materials[0] );
 			scene.addObject( mesh );
 		}
 		
@@ -192,7 +244,17 @@
 		}
 	}
 	
-	function handleMousePick()
+	function onMouseClick( event )
+	{
+		//Handle Gui
+		var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
+		if( intersectsGui.length > 0 )
+		{
+			intersectsGui[ 0 ].object.onMouseClick();
+		}
+	}
+	
+	function intersectWithMouse( scene, camera )
 	{
 		var viewProjI = new THREE.Matrix4();
 		viewProjI.identity();
@@ -217,20 +279,30 @@
 		mouseRay.direction.y = rayNear.y - camera.position.y;
 		mouseRay.direction.z = rayNear.z - camera.position.z;
 		mouseRay.direction.normalize();
-        
-        
-		var intersects = mouseRay.intersectScene( scene );
-		if( intersects.length > 0 )
-		{
-			if( intersects[ 0 ].object !== null )
+   
+		return mouseRay.intersectScene( scene );
+	}
+	
+	function handleMousePick()
+	{
+		//Handle Gui
+		var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
+		if( intersectsGui.length == 0 )
+		{	
+			//Handle Mouse over Images
+			var intersects = intersectWithMouse( scene, camera );
+			if( intersects.length > 0 )
 			{
-				pickedMesh = intersects[ 0 ].object;
+				if( intersects[ 0 ].object !== null )
+				{
+					pickedMesh = intersects[ 0 ].object;
+				}
 			}
-		}
-		
-		else
-		{
-			pickedMesh = null;
+
+			else
+			{
+				pickedMesh = null;
+			}
 		}
 	}		
 	
@@ -265,9 +337,20 @@
 		mesh.scale.y = fYscale;
 		mesh.width = texture.image.width;
 		mesh.height = texture.image.height;
-		mesh.materials[0].map = texture;
+		//mesh.materials[0].map = texture;
 		//imageMeshes[ iElement ]
+		imageMats[ iElement ].map = texture;
 		
+		rebuildPositions();
+	}
+	
+	function togglePerspective()
+	{
+		imagePositionMode++;
+		
+		if( imagePositionMode > 2 )
+			imagePositionMode = 0;
+			
 		rebuildPositions();
 	}
 	
@@ -315,7 +398,6 @@
 			
 	function rebuildPositions_line()
 	{
-		renderer.setDepthTest( false );
 		var currPosX = 0;
 		
 		var boundMin = new THREE.Vector3();
@@ -332,17 +414,11 @@
 			posX = currPosX + posXAdd - mesh.width / 2;
 			currPosX += posXAdd;
 			
-			animator.AddAnimation( { 
-				interpolationType: "smoothstep", 
-				dataType: "Vector3", 
-				startValue: mesh.position, 
-				endValue: new THREE.Vector3( posX, posY, 0 ), 
-				animValue: mesh.position,
-				duration: 1000,
-				repetition: "oneShot"
-			  } );
+			mesh.tempPos = new THREE.Vector3();
+			mesh.tempPos.x = posX;
+			mesh.tempPos.y = posY;
 			
-			updateBounds( mesh, boundMin, boundMax );
+			updateBounds( mesh.tempPos, boundMin, boundMax );
 		}
 		
 		boundMin.x -= imageMeshes[ 0 ].width / 2;
@@ -350,7 +426,18 @@
 		
 		for( var i = 0; i < imageMeshes.length; ++i )
 		{
-			imageMeshes[ i ].position.x -= ( boundMax.x - boundMin.x ) / 2;
+			var mesh = imageMeshes[ i ];
+			mesh.tempPos.x -= ( boundMax.x - boundMin.x ) / 2;
+			
+			animator.AddAnimation( { 
+				interpolationType: "smoothstep", 
+				dataType: "Vector3", 
+				startValue: mesh.position, 
+				endValue: mesh.tempPos,
+				animValue: mesh.position,
+				duration: 2000,
+				repetition: "oneShot"
+			 } );
 		}
 		
 		imageBoundsMin.copy( boundMin );
@@ -449,6 +536,22 @@
 			  } );
 		}
 	}
+	
+	function setDepthMats()
+	{
+		for( var i = 0; i < imageMeshes.length; ++i )
+		{
+			imageMeshes[ i ].materials = [ depthMat ];
+		}
+	}
+	
+	function setRegularMats()
+	{
+		for( var i = 0; i < imageMeshes.length; ++i )
+		{
+			imageMeshes[ i ].materials = [ imageMats[ i ] ];
+		}
+	}
 		
 	function animate()
 	{
@@ -464,5 +567,21 @@
 	function render()
 	{
 		renderer.clear();
-		renderer.render( scene, camera );
+		
+		// //Render scene in colorRT
+		setRegularMats();
+		renderer.render( scene, camera, colorRT, true );
+		
+		//Render depth in depthRT
+		setDepthMats();
+		renderer.render( scene, camera, depthRT, true );
+	
+		//Render Postpro effect
+		//renderer.render( postpro.scene, postpro.camera );
+		postpro.applyGauss( renderer );
+		
+		//renderer.render( scene, camera );
+		
+		//Render GUI layer
+		renderer.render( gui.scene, gui.camera );
 	}

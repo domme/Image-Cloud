@@ -150,8 +150,13 @@ function Animator()
 					trash.push( anim );
 					continue;
 				}
-									
+				
 				else if( anim.repetition == "loop" )
+				{
+					anim.currT = 0;
+				}
+									
+				else if( anim.repetition == "fourthAndBackLoop" )
 				{
 					t = 2 - t;
 					if( t < 0 )
@@ -189,7 +194,10 @@ function Animator()
             
 		    else if( anim.dataType == "Quaternion" )
 		    {
-		    	THREE.Quaternion.slerp( anim.startValue, anim.endValue, anim.animValue, step );
+				var newQuad = new THREE.Quaternion();
+		    	THREE.Quaternion.slerp( anim.startValue, anim.endValue, newQuad, step );
+		
+				anim.animValue.copy( newQuad );
 		    }	
 		}
 		
