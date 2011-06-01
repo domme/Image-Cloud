@@ -5,8 +5,10 @@ AdditionalShaders = {
 	{
 		uniforms: { "tDepth" : { type: "t", value: 0, texture: null },
 					"tImg" : { type: "t", value: 1, texture: null },
+					"tGauss" : { type: "t", value: 2, texture: null },
 					"v2ImageSize": { type: "v2", value: new THREE.Vector2( 1024, 768 ) },
 					"v2SamplingDir": { type: "v2", value: new THREE.Vector2( 1, 0 ) },
+					"fFocusDepth": { type: "f", value: 0.5 },
 		 			},
 		
 		vertexShader:
@@ -25,26 +27,29 @@ AdditionalShaders = {
 			"precision highp float;",
 			"uniform sampler2D tDepth;",
 			"uniform sampler2D tImg;",
+			"uniform sampler2D tGauss;",
 			"uniform vec2 v2ImageSize;",
 			"uniform vec2 v2SamplingDir;",
-			"varying vec2 v2uv;",
+			"uniform float fFocusDepth;",
 			
+			"varying vec2 v2uv;",
+						
 			"float e = 2.718281828;",
 			"float pi = 3.14159265;",
+			"float fGaussStep = 1.0 / ( KERNEL_SIZE + 1.0 );",
+			"float fGaussStepHalf = fGaussStep / 2.0;",
 			
 			"float gauss( float x )",
 			"{",
-				"float o = 5.0;",
-				"return ( 1.0 / sqrt( 2.0 * pi * o * o ) ) * pow( e, ( ( -x * x ) / ( 2.0 * o * o ) ) );",
+				"x = abs( x );",
+				"return texture2D( tGauss, vec2( x * fGaussStep + fGaussStepHalf, fGaussStepHalf ) ).x;",
 			"}",
 			
-			"float gaussNorm(  )",
+			"vec4 blurGauss( float fDepth )",
 			"{",
-				"return gauss( 0.0 ) + 2.0*gauss( 1.0 ) + 2.0*gauss( 2.0 ) + 2.0*gauss( 3.0 );",
-			"}",
+				"float fFocus = max( fDepth, fFocusDepth ) - min( fDepth, fFocusDepth );",
+				//"float fFocus = fFocus;",
 			
-			"vec4 blurGauss( )",
-			"{",
 				"float step;",
 				"vec2 stepBackHalf;",
 				
@@ -62,15 +67,14 @@ AdditionalShaders = {
 				
 				"float fthisWeight = 0.0;",
 				"float fWeights = 0.0;",
-				"float fGaussNorm = gaussNorm();",
-
+				
 				"vec4 v4Color = vec4( 0.0, 0.0, 0.0, 0.0 );",
 				"vec2 v2SamplingPos;",
 				
-				"for( int i = -2; i <= 2; ++i )",
+				"for( float i = -KERNEL_SIZE; i <= KERNEL_SIZE; ++i )",
 				"{",
-					"v2SamplingPos = ( v2uv + stepBackHalf ) + v2SamplingDir * float( float( i ) ) * step;",
-					"fthisWeight = gauss( float( i ) )/ fGaussNorm;",
+					"v2SamplingPos = ( v2uv + stepBackHalf ) + v2SamplingDir * i * step * min( 1.0, fFocus * 10.0 ); //min( 1.0, fDepth * 2.0 );",
+					"fthisWeight = gauss( float( i ) );",
 					"fWeights += fthisWeight;",
 					"v4Color += texture2D( tImg, v2SamplingPos ) * fthisWeight;",					
 				"}",
@@ -78,16 +82,10 @@ AdditionalShaders = {
 				"return v4Color / fWeights;",
 			"}",
 			
-			"void main() {",
+			"void main()", 
+			"{",
 				"float fDepth = texture2D( tDepth, v2uv ).x;",
-				
-				"if( fDepth > 0.001 )",
-				"{",
-					"gl_FragColor = vec4( blurGauss().xyz, 1.0 );",
-				"}",
-				
-				"else",
-					"gl_FragColor = texture2D( tImg, v2uv );",
+				"gl_FragColor = vec4( blurGauss( fDepth ).xyz, 1.0 );",
 			"}"
 		].join( "\n" ),
 	},
@@ -125,7 +123,7 @@ AdditionalShaders = {
 			"void main() {",
 				"float fDepth = texture2D( tDepth, v2uv ).x;",
 				
-				"if( fDepth > 0.001 )",
+				"if( fDepth < 0.9 )",
 				"{",
 					"float fUstep = 1.0 / v2ImageSize.x;",
 					"float fVstep = 1.0 / v2ImageSize.y;",
@@ -158,7 +156,7 @@ AdditionalShaders = {
 	'depthLinear' : 
 	{
 		uniforms : { "mNear" : { type: "f", value: 1.0 }, 
-					 "mFar": { type:"f", value: 2000.0 },
+					 "mFar": { type:"f", value: 10000.0 },
 					 "opacity" : { type: "f", value: 1.0 } 
 					},
 							

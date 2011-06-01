@@ -108,7 +108,7 @@
 				}
 			}
 			
-			postpro.renderTargetImg = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+			postpro.renderTargetImg = new THREE.WebGLRenderTarget( window.innerWidth / 2, window.innerHeight / 2, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
 			postpro.renderTargetDepth = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
 			
 			var depthShader = AdditionalShaders[ 'depthLinear' ];

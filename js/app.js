@@ -140,7 +140,20 @@
 	
 		loadingTexture = THREE.ImageUtils.loadTexture( "textures/loading.jpg", new THREE.UVMapping(), onInitWithLoadingTexture );
 		
-		depthMat = new THREE.MeshDepthMaterial();
+		
+		var depthShader = AdditionalShaders[ 'depthLinear' ];
+		var depthUniforms = THREE.UniformsUtils.clone( depthShader.uniforms );
+		depthUniforms[ 'mFar' ].value = camera.far;
+		
+		depthMat = new THREE.MeshShaderMaterial(
+			{
+				uniforms: depthUniforms,
+				fragmentShader: depthShader.fragmentShader,
+				vertexShader: depthShader.vertexShader,
+				blending: THREE.NormalBlending,
+				transparent: true
+			} );
+		
 		
 		for( var i = 0; i < urls.length; ++i )
 		{
@@ -196,6 +209,21 @@
 		{
 			pickedMesh.scale.x *= pickScaleIncrease;
 			pickedMesh.scale.y *= pickScaleIncrease;
+		}
+		
+		
+		//calculate the current depth of the picked element
+		if( pickedMesh != null )
+		{
+			var posVS = new THREE.Vector3();
+			posVS.clone( pickedMesh.position );
+			var posVS4 = new THREE.Vector4( posVS.x, posVS.y, posVS.z, 1.0 );
+			
+			var view = camera.matrixWorldInverse;
+			posVS4 = view.multiplyVector4( posVS4 );
+			
+			//postpro.depthFocus = Math.abs( posVS4.z / camera.far );
+			postpro.depthFocus = Math.abs( pickedMesh.position.z - camera.position.z ) / camera.far;
 		}
 		
 		lastPickedMesh = pickedMesh;

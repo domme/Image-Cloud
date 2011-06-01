@@ -10,19 +10,25 @@ Postpro = function ( colorRT, depthRT )
 	this.camera.position.z = 100;
 	this.effects = {};
 	
+	this.depthFocus = 0.5;
 	//////////////////// Create Blur Material //////////////////////////////
 	var blurShader = AdditionalShaders[ "gaussDof" ];
 	var blurUniforms = THREE.UniformsUtils.clone( blurShader.uniforms );
+	var gaussKernelSize = 2;
+	var gaussTexture = new THREE.Texture( createGaussTexture( gaussKernelSize ), new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.NearestFilter );
+	gaussTexture.needsUpdate = true;
 	
 	blurUniforms[ "tDepth" ].texture = this.depthTexture;
 	blurUniforms[ "tImg" ].texture = this.colorTexture;
-	blurUniforms[ "v2ImageSize" ].value = new THREE.Vector2( window.innerWidth, window.innerHeight );
+	blurUniforms[ "tGauss" ].texture = gaussTexture;
+	blurUniforms[ "v2ImageSize" ].value = new THREE.Vector2( this.colorTexture.width, this.colorTexture.height );
 	blurUniforms[ "v2SamplingDir" ].value = new THREE.Vector2( 1.0, 0.0 );
+	blurUniforms[ "fFocusDepth" ].value = this.depthFocus;
 	
 	var matGauss = new THREE.MeshShaderMaterial( {
 		uniforms: blurUniforms,
-		vertexShader: blurShader.vertexShader,
-		fragmentShader: blurShader.fragmentShader,
+		vertexShader: "#define KERNEL_SIZE " + gaussKernelSize + ".0\n" + blurShader.vertexShader,
+		fragmentShader: "#define KERNEL_SIZE " + gaussKernelSize + ".0\n" + blurShader.fragmentShader,
 		blending: THREE.NormalBlending,
 		transparent: true
 	} );
@@ -35,6 +41,7 @@ Postpro = function ( colorRT, depthRT )
 	{
 		//Setup gauss effect
 		var gaussMat = this.effects[ "gauss" ];
+		gaussMat.uniforms[ "fFocusDepth" ].value = this.depthFocus;
 		this.quad.materials = [ gaussMat ];
 		
 		//Horizontal blur to RT_1
@@ -53,3 +60,46 @@ Postpro = function ( colorRT, depthRT )
 };
 
 Postpro.prototype.constructor = Postpro;
+
+
+
+function createGaussTexture( kernelSize )
+{
+	var gaussValues = [ ];
+	
+	var sigma = kernelSize + 1;
+	var e = 2.718281828;
+	var gaussSum = 0.0;
+	for( var i = 0; i <= kernelSize; ++i )
+	{
+		var x = Math.abs( i );
+		var gauss = ( 1.0 / Math.sqrt( 2.0 * Math.PI * sigma * sigma ) ) * Math.pow( e, ( ( -x * x ) / ( 2.0 * sigma * sigma ) ) );
+		gaussSum += gauss;
+		gaussValues.push( gauss );
+	}
+
+	for( var i = 0; i < gaussValues.length; ++i )
+	{
+		gaussValues[ i ] /= gaussSum;
+	}
+
+	var canvas = document.createElement( 'canvas' );
+	canvas.width = sigma;
+	canvas.height = 1;
+	var context = canvas.getContext( '2d' );
+	var image = context.getImageData( 0, 0, sigma, i );
+
+
+	var x = 0, y = 0;
+
+	for ( var i = 0, j = 0, l = image.data.length; i < l; i += 4, j ++ ) 
+	{
+		image.data[ i ]		= gaussValues[ j ] * 255;
+		image.data[ i + 1 ] = gaussValues[ j ] * 255;
+		image.data[ i + 2 ] = gaussValues[ j ] * 255;
+		image.data[ i + 3 ] = 255;
+	}
+
+	context.putImageData( image, 0, 0 );
+	return canvas;
+}
