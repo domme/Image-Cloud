@@ -26,7 +26,7 @@ THREE.WallCamera = function ( parameters )
 	var lastTime = new Date().getTime();
 	var orientSpeed = 1000; //1 second interpolation duration for orientation changes
 	var orientT = 0;
-	var maxHeading = 20;
+	var maxHeading = 40;
 	var maxAngleDeg = 60;
 	var maxAngleRad = maxAngleDeg / 180 * Math.PI;
 	var currMat = this.matrix;
@@ -232,7 +232,7 @@ THREE.WallCamera = function ( parameters )
 		if( sign( event.wheelDeltaY ) != sign( heading.z ) )
 			heading.z = 0;
 			
-		heading.z -= event.wheelDeltaY / 10;
+		heading.z -= event.wheelDeltaY / 2;
 		checkHeading();
 	};
 

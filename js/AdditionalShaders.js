@@ -73,7 +73,7 @@ AdditionalShaders = {
 				
 				"for( float i = -KERNEL_SIZE; i <= KERNEL_SIZE; ++i )",
 				"{",
-					"v2SamplingPos = ( v2uv + stepBackHalf ) + v2SamplingDir * i * step * min( 1.0, fFocus * 10.0 ); //min( 1.0, fDepth * 2.0 );",
+					"v2SamplingPos = ( v2uv + stepBackHalf ) + v2SamplingDir * i * step * min( 1.0, fFocus * 2.0 ); //min( 1.0, fDepth * 2.0 );",
 					"fthisWeight = gauss( float( i ) );",
 					"fWeights += fthisWeight;",
 					"v4Color += texture2D( tImg, v2SamplingPos ) * fthisWeight;",					

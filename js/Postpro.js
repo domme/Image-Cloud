@@ -10,11 +10,11 @@ Postpro = function ( colorRT, depthRT )
 	this.camera.position.z = 100;
 	this.effects = {};
 	
-	this.depthFocus = 0.5;
+	this.depthFocus = { value: 0.5 };
 	//////////////////// Create Blur Material //////////////////////////////
 	var blurShader = AdditionalShaders[ "gaussDof" ];
 	var blurUniforms = THREE.UniformsUtils.clone( blurShader.uniforms );
-	var gaussKernelSize = 2;
+	var gaussKernelSize = 4;
 	var gaussTexture = new THREE.Texture( createGaussTexture( gaussKernelSize ), new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.NearestFilter );
 	gaussTexture.needsUpdate = true;
 	
@@ -23,7 +23,7 @@ Postpro = function ( colorRT, depthRT )
 	blurUniforms[ "tGauss" ].texture = gaussTexture;
 	blurUniforms[ "v2ImageSize" ].value = new THREE.Vector2( this.colorTexture.width, this.colorTexture.height );
 	blurUniforms[ "v2SamplingDir" ].value = new THREE.Vector2( 1.0, 0.0 );
-	blurUniforms[ "fFocusDepth" ].value = this.depthFocus;
+	blurUniforms[ "fFocusDepth" ].value = this.depthFocus.value;
 	
 	var matGauss = new THREE.MeshShaderMaterial( {
 		uniforms: blurUniforms,
@@ -41,7 +41,7 @@ Postpro = function ( colorRT, depthRT )
 	{
 		//Setup gauss effect
 		var gaussMat = this.effects[ "gauss" ];
-		gaussMat.uniforms[ "fFocusDepth" ].value = this.depthFocus;
+		gaussMat.uniforms[ "fFocusDepth" ].value = this.depthFocus.value;
 		this.quad.materials = [ gaussMat ];
 		
 		//Horizontal blur to RT_1

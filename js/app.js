@@ -95,7 +95,8 @@
 		camera.farWidth = camera.aspect * camera.farHeight;
 		camera.fovHorizontal = 2 *( Math.atan( ( camera.farWidth / 2 ) / camera.far ) );
 	
-		scene 		= new THREE.Scene();
+		scene 		= new THREE.Scene( );
+		scene.fog = new THREE.Fog( 0xffffff, ( camera.far - camera.near ) - ( camera.far - camera.near ) * 0.25, camera.far - camera.near );
 		var cube = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
 		scene.addObject( cube );
 		
@@ -146,13 +147,13 @@
 		depthUniforms[ 'mFar' ].value = camera.far;
 		
 		depthMat = new THREE.MeshShaderMaterial(
-			{
-				uniforms: depthUniforms,
-				fragmentShader: depthShader.fragmentShader,
-				vertexShader: depthShader.vertexShader,
-				blending: THREE.NormalBlending,
-				transparent: true
-			} );
+							{
+								uniforms: depthUniforms,
+								fragmentShader: depthShader.fragmentShader,
+								vertexShader: depthShader.vertexShader,
+								blending: THREE.NormalBlending,
+								transparent: true
+							} );
 		
 		
 		for( var i = 0; i < urls.length; ++i )
@@ -223,7 +224,15 @@
 			posVS4 = view.multiplyVector4( posVS4 );
 			
 			//postpro.depthFocus = Math.abs( posVS4.z / camera.far );
-			postpro.depthFocus = Math.abs( pickedMesh.position.z - camera.position.z ) / camera.far;
+			animator.AddAnimation( { 
+		 		 		interpolationType: "smoothstep", 
+		 		 		dataType: "float", 
+		 		 		startValue: postpro.depthFocus.value, 
+		 		 		endValue: Math.abs( pickedMesh.position.z - camera.position.z ) / camera.far, 
+		 		 		animValue: postpro.depthFocus,
+		 		 		duration: 500,
+		 		 		repetition: "oneShot"
+		 		 	  } );
 		}
 		
 		lastPickedMesh = pickedMesh;
@@ -551,7 +560,7 @@
 			
 			endPos.x = min + ( max - min ) * Math.random();
 			endPos.y = min + ( max - min ) * Math.random();
-			endPos.z = 3000 * Math.random();
+			endPos.z = 5000 * Math.random();
 			
 			animator.AddAnimation( { 
 				interpolationType: "smoothstep", 
@@ -605,7 +614,7 @@
 		renderer.render( scene, camera, depthRT, true );
 	
 		//Render Postpro effect
-		//renderer.render( postpro.scene, postpro.camera );
+		renderer.render( postpro.scene, postpro.camera );
 		postpro.applyGauss( renderer );
 		
 		//renderer.render( scene, camera );

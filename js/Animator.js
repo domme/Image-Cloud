@@ -4,7 +4,7 @@
  * animationInfo = {
  *  interpolation: <string> { "linear" | "smoothstep" | "sine" | "weighted average" }
  *	scaling : <float>	
- *	dataType : <sting> { "Vector3" | "Vector2" | "Quaternion" }
+ *	dataType : <sting> { "Vector3" | "Vector2" | "Quaternion" | "float" }
  *  startValue : <Object> //either of the objects listed in data types
  *  endValue : <Object> //either of the objects listed in data types
  *  animValue : <object>  //either of the objects listed in data types
@@ -87,8 +87,18 @@ function Animator()
 			anim.endValue = new THREE.Quaternion();
 		}
 		
-		anim.startValue.copy( animationInfo.startValue );
-		anim.endValue.copy( animationInfo.endValue );
+		if( anim.dataType != "float" )
+		{
+			anim.startValue.copy( animationInfo.startValue );
+			anim.endValue.copy( animationInfo.endValue );
+		}
+		
+		else
+		{
+			anim.startValue = animationInfo.startValue;
+			anim.endValue = animationInfo.endValue;
+		}
+		
 		anim.callback = animationInfo.callback;
 		
 		anim.animValue 		= animationInfo.animValue;
@@ -199,6 +209,12 @@ function Animator()
 		
 				anim.animValue.copy( newQuad );
 		    }	
+		
+			else if( anim.dataType == "float" )
+			{
+				if( anim.animValue.value )
+					anim.animValue.value = anim.startValue * ( 1 - step ) + anim.endValue * step;
+			}
 		}
 		
 		//delete trash
