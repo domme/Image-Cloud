@@ -1,6 +1,125 @@
 AdditionalShaders = {
 	
 	
+	'dofInterpolate':
+	{
+		uniforms: { "tImg" : { type: "t", value: 0, texture: null },
+					"tBlurred" : { type: "t", value: 1, texture: null },
+					"tDepth" : { type: "t", value: 2, texture: null },
+					"fFocusDepth": { type: "f", value: 0.5 },
+					},
+					
+					
+		vertexShader:
+		  "precision highp float;				   \n\
+		  varying vec2 v2uv;                       \n\
+		                                           \n\
+		  void main() {                            \n\
+		     v2uv = vec2( uv.x, 1.0 - uv.y );      \n\
+		     gl_Position = vec4( position, 1.0 );  \n\
+		  }",
+		
+		fragmentShader:
+			"precision highp float;																		\n\
+			uniform sampler2D tImg;                                                                     \n\
+			uniform sampler2D tBlurred;                                                                 \n\
+			uniform sampler2D tDepth;                                                                   \n\
+			uniform float fFocusDepth;                                                                  \n\
+			                                                                                            \n\
+			varying vec2 v2uv;                                                                          \n\
+			                                                                                            \n\
+			void main()                                                                                 \n\
+			{                                                                                           \n\
+				float fDepth = texture2D( tDepth, v2uv ).x;                                             \n\
+				float fFocus = abs( abs( fDepth ) - abs( fFocusDepth ) );                 				\n\
+				  																						\n\
+																										\n\
+				gl_FragColor = mix( texture2D( tImg, v2uv ), texture2D( tBlurred, v2uv ), clamp( fFocus * 5.0, 0.0, 1.0 ) );     \n\
+			}"
+	},
+	
+	
+	'gauss':
+	{
+		uniforms: { "tImg" : { type: "t", value: 0, texture: null },
+					"tGauss" : { type: "t", value: 1, texture: null },
+					"v2ImageSize": { type: "v2", value: new THREE.Vector2( 1024, 768 ) },
+					"v2SamplingDir": { type: "v2", value: new THREE.Vector2( 1, 0 ) },
+		 			},
+		
+		vertexShader:
+		  "precision highp float;				   \n\
+		  varying vec2 v2uv;                       \n\
+		  uniform vec2 v2SamplingDir;              \n\
+		                                           \n\
+		  void main() {                            \n\
+		     v2uv = uv;                            \n\
+		     gl_Position = vec4( position, 1.0 );  \n\
+		  }",                             
+		
+		
+		fragmentShader:
+			"precision highp float;																		\n\
+			uniform sampler2D tImg;                                                                     \n\
+			uniform sampler2D tGauss;                                                                   \n\
+			uniform vec2 v2ImageSize;                                                                   \n\
+			uniform vec2 v2SamplingDir;                                                                 \n\
+			                                                                                            \n\
+			varying vec2 v2uv;                                                                          \n\
+			                                                                                            \n\
+			float fGaussStep = 1.0 / ( KERNEL_SIZE + 1.0 );                                             \n\
+			float fGaussStepHalf = fGaussStep / 2.0;                                                    \n\
+			                                                                                            \n\
+			float gauss( float x )                                                                      \n\
+			{                                                                                           \n\
+			   x = abs( x );                                                                            \n\
+			   return texture2D( tGauss, vec2( x * fGaussStep + fGaussStepHalf, fGaussStepHalf ) ).x;   \n\
+			}                                                                                           \n\
+			                                                                                            \n\
+			vec4 blurGauss()                                                                            \n\
+			{                                                                                           \n\
+			   float step;                                                                              \n\
+			   vec2 stepBackHalf;                                                                       \n\
+			                                                                                            \n\
+			   if( v2SamplingDir.x > 0.0 )                                                              \n\
+			   {                                                                                        \n\
+			   		step = 1.0 / v2ImageSize.x;                                                         \n\
+			   		stepBackHalf = vec2( 0.5, 0.0 ) * step;                                             \n\
+			   }                                                                                        \n\
+			                                                                                            \n\
+			   else                                                                                     \n\
+			   {                                                                                        \n\
+			   		step = 1.0 / v2ImageSize.y;                                                         \n\
+			   		stepBackHalf = vec2( 0.0, 0.5 ) * step;                                             \n\
+			   }                                                                                        \n\
+			                                                                                            \n\
+			   float fthisWeight = 0.0;                                                                 \n\
+			   float fWeights = 0.0;                                                                    \n\
+			                                                                                            \n\
+			   vec4 v4Color = vec4( 0.0, 0.0, 0.0, 0.0 );                                               \n\
+			   vec2 v2SamplingPos;                                                                      \n\
+			                                                                                            \n\
+			   for( float i = -KERNEL_SIZE; i <= KERNEL_SIZE; ++i )                                     \n\
+			   {                                                                                        \n\
+			   		v2SamplingPos = ( v2uv + stepBackHalf ) + v2SamplingDir * i * step;                 \n\
+					fthisWeight = gauss( i );                                                           \n\
+					fWeights += fthisWeight;                                                            \n\
+					v4Color += texture2D( tImg, v2SamplingPos ) * fthisWeight;				            \n\
+			   }                                                                                        \n\
+			   	                                                                                        \n\
+			   return v4Color / fWeights;                                                               \n\
+			}                                                                                           \n\
+			                                                                                            \n\
+			void main()                                                                                 \n\
+			{                                                                                           \n\
+			   gl_FragColor = vec4( blurGauss().xyz, 1.0 );                                             \n\
+			}",                                                                                         
+	},                                            
+	
+	
+	
+
+	
 	'gaussDof':
 	{
 		uniforms: { "tDepth" : { type: "t", value: 0, texture: null },

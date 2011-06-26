@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>js/WallCamera.js</string>
+	<string>ImageCloud.html</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -16,7 +16,7 @@
 			<key>filename</key>
 			<string>ImageCloud.html</string>
 			<key>lastUsed</key>
-			<date>2011-06-05T11:09:59Z</date>
+			<date>2011-06-26T12:38:56Z</date>
 			<key>selected</key>
 			<true/>
 		</dict>
@@ -24,7 +24,7 @@
 			<key>filename</key>
 			<string>ImageFlow_Demo.html</string>
 			<key>lastUsed</key>
-			<date>2011-06-05T11:42:40Z</date>
+			<date>2011-06-26T09:25:07Z</date>
 		</dict>
 		<dict>
 			<key>children</key>
@@ -33,25 +33,25 @@
 					<key>filename</key>
 					<string>js/app.js</string>
 					<key>lastUsed</key>
-					<date>2011-06-07T20:18:10Z</date>
+					<date>2011-06-26T11:48:06Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/AdditionalShaders.js</string>
 					<key>lastUsed</key>
-					<date>2011-06-05T11:43:02Z</date>
+					<date>2011-06-26T11:31:35Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/Postpro.js</string>
 					<key>lastUsed</key>
-					<date>2011-06-06T09:24:54Z</date>
+					<date>2011-06-26T12:38:56Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/WallCamera.js</string>
 					<key>lastUsed</key>
-					<date>2011-06-07T20:18:10Z</date>
+					<date>2011-06-26T11:48:06Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -1333,12 +1333,12 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>0</integer>
+				<integer>143</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>119</integer>
+			<integer>69</integer>
 		</dict>
 		<key>../three.js/src/scenes/Fog.js</key>
 		<dict>
@@ -1403,9 +1403,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>1</integer>
+				<integer>46</integer>
 				<key>line</key>
-				<integer>36</integer>
+				<integer>17</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -1461,14 +1461,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>4</integer>
+				<integer>5</integer>
 				<key>line</key>
-				<integer>89</integer>
+				<integer>37</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>21</integer>
+			<integer>0</integer>
 		</dict>
 		<key>js/Animator.js</key>
 		<dict>
@@ -1489,42 +1489,42 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>96</integer>
+				<integer>24</integer>
 				<key>line</key>
-				<integer>30</integer>
+				<integer>19</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>6</integer>
 		</dict>
 		<key>js/WallCamera.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>3</integer>
+				<integer>1</integer>
 				<key>line</key>
-				<integer>236</integer>
+				<integer>226</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>52</integer>
+			<integer>107</integer>
 		</dict>
 		<key>js/app.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>36</integer>
+				<integer>70</integer>
 				<key>line</key>
-				<integer>286</integer>
+				<integer>27</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>247</integer>
+			<integer>8</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
@@ -1537,9 +1537,9 @@
 		<string>../three.js/examples/webgl_materials_video.html</string>
 		<string>js/Animator.js</string>
 		<string>js/Postpro.js</string>
+		<string>js/AdditionalShaders.js</string>
 		<string>../three.js/examples/webgl_lines_colors.html</string>
 		<string>../three.js/src/renderers/WebGLShaders.js</string>
-		<string>js/AdditionalShaders.js</string>
 		<string>../three.js/src/extras/ShaderUtils.js</string>
 		<string>../three.js/src/renderers/WebGLRenderTarget.js</string>
 		<string>../three.js/src/renderers/Projector.js</string>
@@ -1594,6 +1594,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{158, 74}, {1158, 1104}}</string>
+	<string>{{43, 0}, {938, 1178}}</string>
 </dict>
 </plist>
