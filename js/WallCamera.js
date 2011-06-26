@@ -117,6 +117,15 @@ THREE.WallCamera = function ( parameters )
 			heading.z = Math.min( maxHeading, heading.z );
 		else
 			heading.z = Math.max( -maxHeading, heading.z );
+			
+		if( Math.abs( heading.x ) < 0.01 )
+			heading.x = 0;
+			
+		if( Math.abs( heading.y ) < 0.01 )
+			heading.y = 0;
+			
+		if( Math.abs( heading.z ) < 0.01 )
+			heading.z = 0;
 	};
 	
 	function checkAngle( angle )
@@ -232,7 +241,7 @@ THREE.WallCamera = function ( parameters )
 		if( sign( event.wheelDeltaY ) != sign( heading.z ) )
 			heading.z = 0;
 			
-		heading.z -= event.wheelDeltaY / 2;
+		heading.z -= event.wheelDeltaY / 20;
 		checkHeading();
 	};
 

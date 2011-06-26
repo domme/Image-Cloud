@@ -71,9 +71,11 @@ AdditionalShaders = {
 				"vec4 v4Color = vec4( 0.0, 0.0, 0.0, 0.0 );",
 				"vec2 v2SamplingPos;",
 				
+				"step *= min( 1.0, fFocus );",
+				
 				"for( float i = -KERNEL_SIZE; i <= KERNEL_SIZE; ++i )",
 				"{",
-					"v2SamplingPos = ( v2uv + stepBackHalf ) + v2SamplingDir * i * step * min( 1.0, fFocus * 2.0 ); //min( 1.0, fDepth * 2.0 );",
+					"v2SamplingPos = v2uv + v2SamplingDir * i * step; //min( 1.0, fDepth * 2.0 );",
 					"fthisWeight = gauss( float( i ) );",
 					"fWeights += fthisWeight;",
 					"v4Color += texture2D( tImg, v2SamplingPos ) * fthisWeight;",					
@@ -85,7 +87,17 @@ AdditionalShaders = {
 			"void main()", 
 			"{",
 				"float fDepth = texture2D( tDepth, v2uv ).x;",
-				"gl_FragColor = vec4( blurGauss( fDepth ).xyz, 1.0 );",
+							
+				"if( fDepth < 0.99 )",
+				"{",
+					"gl_FragColor = vec4( blurGauss( fDepth ).xyz, 1.0 );",
+				"}",
+				
+				"else",
+				"{",
+					"gl_FragColor = texture2D( tImg, v2uv );",
+				"}",
+				
 			"}"
 		].join( "\n" ),
 	},

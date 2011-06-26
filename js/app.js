@@ -100,42 +100,41 @@
 		var cube = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
 		scene.addObject( cube );
 		
-		gui.scene = new THREE.Scene();
-		gui.camera = new THREE.Camera();
-		gui.camera.projectionMatrix = THREE.Matrix4.makePerspective( 30, camera.aspect, camera.near, camera.far );
-		gui.camera.position.z = 100;
+		// gui.scene = new THREE.Scene();
+		// 	gui.camera = new THREE.Camera();
+		// 	gui.camera.projectionMatrix = THREE.Matrix4.makePerspective( 30, camera.aspect, camera.near, camera.far );
+		// 	gui.camera.position.z = 100;
 		
-		
-		var cubeToggle = new THREE.Mesh( new THREE.Cube( 4, 4, 4 ), new THREE.MeshLambertMaterial( { color: 0x8098E0, opacity: 0.8 } ) );
-		cubeToggle.position.x = window.innerWidth / 17;
-		cubeToggle.position.y = -window.innerHeight / 18;
-		cubeToggle.onMouseClick = togglePerspective;
-		cubeToggle.useQuaternion = true;
-		gui.scene.addObject( cubeToggle );
-		var guiDirLight = new THREE.DirectionalLight( 0xffffff, 1.0, 5000, false );
-		guiDirLight.position.x = -1;
-		guiDirLight.position.y = 1;
-		guiDirLight.position.z = 100;
-		gui.scene.addLight( guiDirLight );
-		
-		var endRotation = new THREE.Quaternion();
-		var startRotation = new THREE.Quaternion();
-		startRotation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), 0.01 );
-		cubeToggle.quaternion.copy( startRotation );
-		endRotation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI * 2 );
-		
-		 animator.AddAnimation( { 
-			 		 		interpolationType: "linear", 
-			 		 		dataType: "Quaternion", 
-			 		 		startValue: cubeToggle.quaternion, 
-			 		 		endValue: endRotation, 
-			 		 		animValue: cubeToggle.quaternion,
-			 		 		duration: 4000,
-			 		 		repetition: "loop"
-			 		 	  } );
+		// var cubeToggle = new THREE.Mesh( new THREE.Cube( 4, 4, 4 ), new THREE.MeshLambertMaterial( { color: 0x8098E0, opacity: 0.8 } ) );
+		// 		cubeToggle.position.x = window.innerWidth / 17;
+		// 		cubeToggle.position.y = -window.innerHeight / 18;
+		// 		cubeToggle.onMouseClick = togglePerspective;
+		// 		cubeToggle.useQuaternion = true;
+		// 		gui.scene.addObject( cubeToggle );
+		// var guiDirLight = new THREE.DirectionalLight( 0xffffff, 1.0, 5000, false );
+		// 		guiDirLight.position.x = -1;
+		// 		guiDirLight.position.y = 1;
+		// 		guiDirLight.position.z = 100;
+		// 		gui.scene.addLight( guiDirLight );
+		// 		
+		// var endRotation = new THREE.Quaternion();
+		// 		var startRotation = new THREE.Quaternion();
+		// 		startRotation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), 0.01 );
+		// 		cubeToggle.quaternion.copy( startRotation );
+		// 		endRotation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI * 2 );
+		// 		
+		// 		 animator.AddAnimation( { 
+		// 			 		 		interpolationType: "linear", 
+		// 			 		 		dataType: "Quaternion", 
+		// 			 		 		startValue: cubeToggle.quaternion, 
+		// 			 		 		endValue: endRotation, 
+		// 			 		 		animValue: cubeToggle.quaternion,
+		// 			 		 		duration: 4000,
+		// 			 		 		repetition: "loop"
+		// 			 		 	  } );
+		// 	
 	
-	
-		colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+		colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
 		depthRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
 		postpro = new Postpro( colorRT, depthRT );
 	
@@ -243,7 +242,7 @@
 		switch( event.keyCode ) 
 		{
 			case 82: /*R*/ 
-				rebuildPositions_3D();
+				togglePerspective();
 			break;
 			
 			case 70: /*F*/ 
@@ -284,11 +283,11 @@
 	function onMouseClick( event )
 	{
 		//Handle Gui
-		var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
-		if( intersectsGui.length > 0 )
-		{
-			intersectsGui[ 0 ].object.onMouseClick();
-		}
+		// var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
+		// 	if( intersectsGui.length > 0 )
+		// 	{
+		// 		intersectsGui[ 0 ].object.onMouseClick();
+		// 	}
 	}
 	
 	function intersectWithMouse( scene, camera )
@@ -323,23 +322,38 @@
 	function handleMousePick()
 	{
 		//Handle Gui
-		var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
-		if( intersectsGui.length == 0 )
-		{	
-			//Handle Mouse over Images
-			var intersects = intersectWithMouse( scene, camera );
-			if( intersects.length > 0 )
+		// var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
+		// 	if( intersectsGui.length == 0 )
+		// 	{	
+		// 		//Handle Mouse over Images
+		// 		var intersects = intersectWithMouse( scene, camera );
+		// 		if( intersects.length > 0 )
+		// 		{
+		// 			if( intersects[ 0 ].object !== null )
+		// 			{
+		// 				pickedMesh = intersects[ 0 ].object;
+		// 			}
+		// 		}
+		// 
+		// 		else
+		// 		{
+		// 			pickedMesh = null;
+		// 		}
+		// 	}
+		
+		
+		var intersects = intersectWithMouse( scene, camera );
+		if( intersects.length > 0 )
+		{
+			if( intersects[ 0 ].object !== null )
 			{
-				if( intersects[ 0 ].object !== null )
-				{
-					pickedMesh = intersects[ 0 ].object;
-				}
+				pickedMesh = intersects[ 0 ].object;
 			}
-
-			else
-			{
-				pickedMesh = null;
-			}
+		}
+		
+		else
+		{
+			pickedMesh = null;
 		}
 	}		
 	
@@ -614,11 +628,11 @@
 		renderer.render( scene, camera, depthRT, true );
 	
 		//Render Postpro effect
-		renderer.render( postpro.scene, postpro.camera );
+		//renderer.render( postpro.scene, postpro.camera );
 		postpro.applyGauss( renderer );
 		
 		//renderer.render( scene, camera );
 		
 		//Render GUI layer
-		renderer.render( gui.scene, gui.camera );
+		//renderer.render( gui.scene, gui.camera );
 	}
