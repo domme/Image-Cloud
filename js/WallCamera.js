@@ -17,7 +17,8 @@ THREE.WallCamera = function ( parameters )
 	var dragPos = new THREE.Vector2( 0, 0 );
 	var heading = new THREE.Vector3( 0, 0, 0 );
 	var posChange = new THREE.Vector3( 0, 0, 0 );
-	var headingDecreaseRate = 0.1;
+	var headingDecreaseRateZ = 0.995;
+	var headingDecreaseRateSide = 0.99;
 	var headingDecrease = true;
 	var baseOrientation = new THREE.Quaternion();
 	var newOrientation = new THREE.Quaternion();
@@ -25,14 +26,25 @@ THREE.WallCamera = function ( parameters )
 	var lastNewOrientationSet = false;
 	var lastTime = new Date().getTime();
 	var orientSpeed = 1000; //1 second interpolation duration for orientation changes
+	var decreaseDuration = 2000; //2 seconds before heading is decreased to 0
 	var orientT = 0;
 	var maxHeading = 40;
 	var maxAngleDeg = 60;
 	var maxAngleRad = maxAngleDeg / 180 * Math.PI;
 	var currMat = this.matrix;
 	var orientationDirForward = true;
+	var mouseDown = false;
+	
+	var oldViewMode = 0;
+	var viewMode = 0;
+	
+	var startAutoMovementTime = 2000;
+	var currAutoMovementTime = 0.0;
+	var bAutoMove = false;
+	var constantZ = 100;
 	
 	var lastMouseDown = false;
+	var currDecreaseTime = 0.0;
 
 	
 	baseOrientation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), 0 );
@@ -54,24 +66,28 @@ THREE.WallCamera = function ( parameters )
 		var time = new Date().getTime();
 		var t = time - lastTime;
 		
-		this.position.x -= heading.x + posChange.x;
-		this.position.y += heading.y + posChange.y;
-		this.position.z += heading.z + posChange.z;
-		
+		                                           
+		this.position.x -= heading.x + posChange.x ;
+		this.position.y += heading.y + posChange.y ;
+		this.position.z += heading.z + posChange.z ;
+		                                           
 		posChange.x = 0;
 		posChange.y = 0;
 		posChange.z = 0;
 				
 		if( headingDecrease )
 		{
-			if( Math.abs( heading.x ) > 0.1 )
-				heading.x = heading.x - sign( heading.x ) * headingDecreaseRate;
+			if( Math.abs( heading.x ) > 0.01 )
+				//heading.x = heading.x - sign( heading.x ) * 0.1;
+				heading.x = heading.x * headingDecreaseRateSide;
 			
-			if( Math.abs( heading.x ) > 0.1 )
-				heading.y = heading.y - sign( heading.y ) * headingDecreaseRate;
+			if( Math.abs( heading.x ) > 0.01 )
+				//heading.y = heading.y - sign( heading.y ) * 0.1;
+				heading.y = heading.y * headingDecreaseRateSide;
 			
-			if( Math.abs( heading.z ) > 0.1 )
-				heading.z = heading.z - sign( heading.z ) * headingDecreaseRate;
+			if( Math.abs( heading.z ) > 0.01 )
+				//heading.z = heading.z - sign( heading.z ) * headingDecreaseRate;
+				heading.z = heading.z * headingDecreaseRateZ;
 		}
 		
 		if( dragStarted )
@@ -80,7 +96,7 @@ THREE.WallCamera = function ( parameters )
 			this.quaternion.multiplySelf( newOrientation );
 		}
 		
-		if( !dragStarted )
+		else
 		{
 			orientT += t;
 			
@@ -93,6 +109,18 @@ THREE.WallCamera = function ( parameters )
 				newOrientation.copy( baseOrientation );
 		}
 		
+		if( !isCameraMoving() && !mouseDown && bAutoMove && viewMode == 2 )
+		{
+			this.position.z -= constantZ * ( t / 1000 );
+		}
+		
+		else if( !isCameraMoving() && !mouseDown && !bAutoMove && viewMode == 2 )
+		{
+			currAutoMovementTime += t;
+			if( currAutoMovementTime > startAutoMovementTime )
+				bAutoMove = true;
+		}
+		
 		lastNewOrientationSet = newOrientationSet;
 		lastTime = time;
 		lastDragStarted = dragStarted;
@@ -100,6 +128,20 @@ THREE.WallCamera = function ( parameters )
 		this.supr.update.call( this );
 	};
 	
+	function restartAutoMove()
+	{
+		bAutoMove = false;
+		currAutoMovementTime = 0.0;
+	}
+	
+	function changeViewMode( newViewMode )
+	{
+		if( newViewMode == 2 && viewMode !== 2 )
+		{
+			viewMode == 2;
+			restartAutoMove();
+		}
+	}
 	
 	function checkHeading()
 	{
@@ -127,6 +169,11 @@ THREE.WallCamera = function ( parameters )
 		if( Math.abs( heading.z ) < 0.01 )
 			heading.z = 0;
 	};
+	
+	function isCameraMoving()
+	{
+		return Math.abs( heading.x ) > 0.01 && Math.abs( heading.y ) > 0.01 && Math.abs( heading.z ) > 0.01;
+	}
 	
 	function checkAngle( angle )
 	{		
@@ -167,7 +214,9 @@ THREE.WallCamera = function ( parameters )
 		if( event.button == 0 ) //left mouse button
 		{
 			dragStarted = true;
-			
+			mouseDown = true;
+			bAutoMove = false;
+			currAutoMovementTime = 0.0;
 			
 			if( !lastMouseDown )
 			{	
@@ -187,7 +236,7 @@ THREE.WallCamera = function ( parameters )
 	};
 	
 	function onMouseMove( event )
-	{
+	{	
 		if( dragStarted )
 		{
 			var dragSpeedX = event.clientX - dragPosStart.x;
@@ -198,8 +247,8 @@ THREE.WallCamera = function ( parameters )
 			
 			var orientX = new THREE.Quaternion();
 			var orientY = new THREE.Quaternion();
-			var angleX = dragSpeedX / 1000;
-			var angleY = dragSpeedY / 1000;
+			var angleX = dragSpeedX / 10000;
+			var angleY = dragSpeedY / 10000;
 			angleX = checkAngle( angleX );
 			angleY = checkAngle( angleY );
 			
@@ -227,7 +276,9 @@ THREE.WallCamera = function ( parameters )
 	
 	function onMouseUp( event )
 	{
-
+		if( event.button == 0 )
+			mouseDown = false;
+		
 		if( event.button == 0 && dragStarted )
 		{
 			dragStarted = false;
@@ -238,6 +289,9 @@ THREE.WallCamera = function ( parameters )
 	
 	function onMouseWheel( event )
 	{
+		bAutoMove = false;
+		currAutoMovementTime = 0.0;
+		
 		if( sign( event.wheelDeltaY ) != sign( heading.z ) )
 			heading.z = 0;
 			
