@@ -40,7 +40,7 @@
 	
 	function getImages()
 	{
-		$.getJSON("http://img.ly/beautiful.json?per_page=200&jsoncallback=?", function (data) 
+		$.getJSON("http://img.ly/beautiful.json?page="+2+"&per_page=200&jsoncallback=?", function (data) 
 		{
 			$.each(data, function (i, item) 
 			{	
@@ -79,7 +79,7 @@
 		animator = new Animator();
 		
 		camera = new THREE.WallCamera( { fov:60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: renderer.domElement } );
-		camera.position.z = 2000;
+		camera.position.z = 1000;
 		camera.position.y = 10; 
 
 		camera.farHeight = 2 * ( Math.tan( camera.fov / 2 ) * camera.far );
@@ -113,7 +113,8 @@
 							} );
 		
 		
-		getImages();
+		//getImages();
+	
 		// for( var i = 0; i < urls.length; ++i )
 		// 	{
 		// 		loadTexture( urls[ i ], new THREE.UVMapping(), applyNewImage, i );
@@ -127,7 +128,8 @@
 			meshMaterials : imageMats,
 			v3DimensionsMin : new THREE.Vector3( -1000.0, -500.0, 0.0 ),
 			v3DimensionsMax : new THREE.Vector3( 1000.0, 500.0, 5000.0 ),
-			animator : animator		
+			animator : animator,
+			scene : scene	
 		} );
 		
 		particleImage = THREE.ImageUtils.loadTexture( "textures/particle1.png", new THREE.UVMapping() );
@@ -174,6 +176,8 @@
 			var mesh = new THREE.Mesh( new THREE.Plane( img.width, img.height ), mat );
 			mesh.width = img.width;
 			mesh.height = img.height;
+			mesh.startWidth = img.width;
+			mesh.startHeight = img.height;
 							
 			imageMeshes.push( mesh );
 			imageMats.push( mesh.materials[0] );
@@ -605,7 +609,7 @@
 		camera.update( imageBoundsMin, imageBoundsMax );
 		stats.update();
 		
-		
+		meshAreaManager.Update();
 		animator.animate();
 		render();
 	}
