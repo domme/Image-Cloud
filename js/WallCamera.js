@@ -55,6 +55,7 @@ THREE.WallCamera = function ( parameters )
 	this.movementSpeed = 1;
 	this.rollSpeed = 1;
 	this.useTarget = false;
+	this.heading;
 	
 	this.useQuaternion = true;
 	this.quaternion.copy( baseOrientation );
@@ -66,6 +67,7 @@ THREE.WallCamera = function ( parameters )
 		var time = new Date().getTime();
 		var t = time - lastTime;
 		
+		this.heading = heading;
 		                                           
 		this.position.x -= heading.x + posChange.x ;
 		this.position.y += heading.y + posChange.y ;
@@ -242,13 +244,13 @@ THREE.WallCamera = function ( parameters )
 			var dragSpeedX = event.clientX - dragPosStart.x;
 			var dragSpeedY = event.clientY - dragPosStart.y;
 			
-			heading.x += dragSpeedX / 10;
-			heading.y += dragSpeedY / 10;		
+			heading.x += dragSpeedX / 20;
+			heading.y += dragSpeedY / 20;		
 			
 			var orientX = new THREE.Quaternion();
 			var orientY = new THREE.Quaternion();
-			var angleX = dragSpeedX / 10000;
-			var angleY = dragSpeedY / 10000;
+			var angleX = dragSpeedX / 4000;
+			var angleY = dragSpeedY / 4000;
 			angleX = checkAngle( angleX );
 			angleY = checkAngle( angleY );
 			
@@ -295,7 +297,7 @@ THREE.WallCamera = function ( parameters )
 		if( sign( event.wheelDeltaY ) != sign( heading.z ) )
 			heading.z = 0;
 			
-		heading.z -= event.wheelDeltaY / 20;
+		heading.z -= event.wheelDeltaY / 40;
 		checkHeading();
 	};
 

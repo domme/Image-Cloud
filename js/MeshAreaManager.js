@@ -1,6 +1,8 @@
+
 MeshAreaManager = function( params )
 {
 	this.meshAreas = [];
+	this.urls = [];
 	
 	this.numMeshesMax = params.numMeshesMax;
 	this.numMeshesPerArea = params.numMeshesPerArea;
@@ -11,31 +13,36 @@ MeshAreaManager = function( params )
 	this.v3DimensionsMax = params.v3DimensionsMax;
 	this.animator = params.animator;
 	this.ThreeScene = params.scene;
+	this.loadingTexture = params.loadingTexture;
 	
 	
 	this.numAreas = Math.ceil( this.numMeshesMax / this.numMeshesPerArea );
 	this.bDebug = true;
 	this.bVisited = false;
-	this.iTriggerOffset = 2;
+	this.iTriggerOffset = 3;
 	
 	this.iLast = this.numAreas - 1;
 	this.iFirst = 0;
-	this.bDebug = true;	
+	this.bDebug = false;	
+	
+	this.oldCamPos = new THREE.Vector3( 0.0, 0.0, 0.0 );
 	
 	var lengthZ = Math.abs( this.v3DimensionsMax.z - this.v3DimensionsMin.z );
-	var stepZ = lengthZ / this.numAreas;
+
+	this.stepZ = lengthZ / this.numAreas;
 	
 	for( var i = 0; i < this.numAreas; ++i )
 	{
-		var currMin = new THREE.Vector3( this.v3DimensionsMin.x, this.v3DimensionsMin.y, - i * stepZ );
-		var currMax = new THREE.Vector3( this.v3DimensionsMax.x, this.v3DimensionsMax.y, - ( i + 1 ) * stepZ );
+		var currMin = new THREE.Vector3( this.v3DimensionsMin.x, this.v3DimensionsMin.y, - i * this.stepZ );
+		var currMax = new THREE.Vector3( this.v3DimensionsMax.x, this.v3DimensionsMax.y, - ( i + 1 ) * this.stepZ );
 		this.meshAreas.push( new MeshArea( { count : this.numMeshesPerArea,
 			 							pageNumber : i + 1,
 										v3Min : currMin,
 										v3Max : currMax,
 			 							iStart : i * this.numMeshesPerArea,
 			 							iEnd : ( i * this.numMeshesPerArea ) + ( this.numMeshesPerArea - 1 ),
-										meshes : this.meshes
+										meshes : this.meshes,
+										loadingTexture : this.loadingTexture
 									  } ) );
 			
 							
@@ -90,9 +97,9 @@ MeshAreaManager = function( params )
 			
 			this.ThreeScene.addObject( line );
 		}
-									
-		
 	}
+	
+	this.areaPageTravelZ = Math.abs( this.meshAreas[ this.iLast ].v3Max.z - this.meshAreas[ this.iFirst ].v3Max.z ) + this.stepZ;	
 };
 
 MeshAreaManager.prototype =
@@ -100,14 +107,39 @@ MeshAreaManager.prototype =
 	Update : function()
 	{
 		var cPos = this.camera.position;
+		var cHeadingZ = cPos.z - this.oldCamPos.z;
+		
+		//if( Math.abs( cHeadingZ ) < 0.0001 ) //camera hasn't moved since last frame
+		//	return;
+		
 		var iNext = -1;
 		
-		var iPageTrigger = this.iFirst;	
+		var iPageTriggerForward = this.iFirst;	
+		var iPageTriggerBackward = this.iFirst < this.numAreas - 1 ? this.iFirst + 1 : 0;
+		
 		for( var i = 0; i < this.iTriggerOffset; ++i )
 		{
-			iPageTrigger = iPageTrigger < this.numAreas - 1 ? iPageTrigger + 1 : 0;
+			iPageTriggerForward = iPageTriggerForward < this.numAreas - 1 ? iPageTriggerForward + 1 : 0;
 		}
 		
+		//DEBUG
+		if( this.bDebug )
+		for( var i = 0; i < this.numAreas; ++i )
+		{
+			var currArea = this.meshAreas[ i ];
+			
+			if( i == iPageTriggerForward )
+				currArea.debugMesh.materials[ 0 ] = new THREE.LineBasicMaterial( { color: 0x00ff00, opacity: 0.9, linewidth : 3 } );
+				
+			else if( i == iPageTriggerBackward )
+				currArea.debugMesh.materials[ 0 ] = new THREE.LineBasicMaterial( { color: 0x0000ff, opacity: 0.9, linewidth : 3 } );
+				
+			else
+				currArea.debugMesh.materials[ 0 ] = new THREE.LineBasicMaterial( { color: 0xff0000, opacity: 0.9 } );	
+		}
+		// /Debug
+		
+				
 		for( var i = 0; i < this.numAreas; ++i )
 		{
 			var area = this.meshAreas[ i ];
@@ -139,27 +171,53 @@ MeshAreaManager.prototype =
 						}
 					}
 					
+
+					
 					//Page-Streaming forward
-					if( i == iPageTrigger )
+					if( i == iPageTriggerForward && cHeadingZ < -0.00001 )
 					{
 						var firstArea = this.meshAreas[ this.iFirst ];
 						var lastArea = this.meshAreas[ this.iLast ];
 						
-						var fDistanceMoved = Math.abs( lastArea.v3Min.z - firstArea.v3Min.z );
-						
 						firstArea.v3Min = new THREE.Vector3( lastArea.v3Min.x, lastArea.v3Min.y, lastArea.v3Max.z );
-						firstArea.v3Max = new THREE.Vector3( lastArea.v3Max.x, lastArea.v3Max.y, lastArea.v3Max.z - Math.abs( lastArea.v3Max.z - lastArea.v3Min.z ) );
+						firstArea.v3Max = new THREE.Vector3( lastArea.v3Max.x, lastArea.v3Max.y, lastArea.v3Max.z - this.stepZ );
 						
 						if( this.bDebug )
-							firstArea.debugMesh.position = new THREE.Vector3( firstArea.debugMesh.position.x, firstArea.debugMesh.position.y, firstArea.debugMesh.position.z - fDistanceMoved );
+							firstArea.debugMesh.position = new THREE.Vector3( firstArea.debugMesh.position.x, firstArea.debugMesh.position.y, firstArea.debugMesh.position.z - this.areaPageTravelZ );
 						
 						firstArea.pageNumber = lastArea.pageNumber + 1;
 						
 						firstArea.GetNewPhotos();
-						firstArea.RebuildPositions( true );
+						firstArea.RebuildPositions( false );
 
 						this.iLast = this.iFirst;
 						this.iFirst = this.iFirst < this.numAreas - 1 ? this.iFirst + 1 : 0;
+					}
+					
+					//Page Streaming backward
+					else if( i == iPageTriggerBackward && cHeadingZ > 0.00001 )
+					{
+						var firstArea = this.meshAreas[ this.iFirst ];
+						var lastArea = this.meshAreas[ this.iLast ];
+						
+						if( firstArea.pageNumber < 1 )
+							break;
+						
+						var fDistanceMoved = Math.abs( lastArea.v3Min.z - firstArea.v3Min.z );
+						
+						lastArea.v3Min = new THREE.Vector3( firstArea.v3Min.x, firstArea.v3Min.y, firstArea.v3Min.z + this.stepZ );
+						lastArea.v3Max = new THREE.Vector3( firstArea.v3Max.x, firstArea.v3Max.y, firstArea.v3Min.z );
+						
+						if( this.bDebug )
+							lastArea.debugMesh.position =  new THREE.Vector3( lastArea.debugMesh.position.x, lastArea.debugMesh.position.y, lastArea.debugMesh.position.z + this.areaPageTravelZ );
+						
+						lastArea.pageNumber = firstArea.pageNumber - 1;	
+						
+						lastArea.GetNewPhotos();
+						lastArea.RebuildPositions( false );
+						
+						this.iFirst = this.iLast;
+						this.iLast = this.iLast > 0 ? this.iLast - 1 : this.numAreas - 1;
 					}
 					
 				}
@@ -171,10 +229,10 @@ MeshAreaManager.prototype =
 						area.switchToSmall();
 						area.bVisited = false;
 					}
-				}
-			///////////////////////////////////////////////////////
-					
+				}		
 		}
+		
+		this.oldCamPos = this.camera.position.clone();
 	},
 	
 	RebuildPositions : function()

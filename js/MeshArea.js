@@ -8,7 +8,16 @@ MeshArea = function( params )
 	this.iEnd = params.iEnd !== undefined ? params.iEnd : this.count - 1;
 	this.meshes = params.meshes;
 	this.animator = params.animator;
+	this.loadingTexture = params.loadingTexture;
 	this.debugMesh;
+
+	// var loadingImg = new Image();
+	// loadingImg.src = "textures/loading.jpg";
+	// 
+	// for( var i = this.iStart; i <= this.iEnd; ++i )
+	// {
+	// 	this.meshes[ i ].materials = [ new THREE.MeshBasicMaterial ]
+	// }	
 	
 	this.GetNewPhotos();
 };
@@ -46,6 +55,14 @@ MeshArea.prototype =
 	GetNewPhotos : function( )
 	{
 		var meshArea = this;
+		
+		for( var i = this.iStart; i <= this.iEnd; ++i )
+				{
+					var currMesh = this.meshes[ i ];
+					currMesh.materials[ 0 ].map.image = this.loadingTexture;
+					currMesh.materials[ 0 ].map.needsUpdate = true;
+				}
+		
 		console.log( "http://img.ly/beautiful.json?page=" + meshArea.pageNumber + "&per_page=" + meshArea.count + "&jsoncallback=?" );
 		$.getJSON("http://img.ly/beautiful.json?page=" + meshArea.pageNumber + "&per_page=" + meshArea.count + "&jsoncallback=?", function (data) 
 		{
@@ -62,12 +79,10 @@ MeshArea.prototype =
 					
 				var currMesh = meshArea.meshes[ meshArea.iStart + i ];
 					
-				currMesh.geometry = new THREE.Plane( currMesh.startWidth, currMesh.startHeight );
+				currMesh.geometry = new THREE.Plane( currMesh.width, currMesh.height );
 				currMesh.geometry.computeBoundingSphere();
-				currMesh.width = currMesh.startWidth;
-				currMesh.height = currMesh.startHeight;
-
-				meshArea.loadTexture( meshArea, scr_temp, new THREE.UVMapping(), meshArea.applyNewImageInit, meshArea.iStart + i );
+							
+				meshArea.loadTexture( meshArea, scr_temp, meshArea.applyNewImageInit, meshArea.iStart + i );
 
 				currMesh.textureSrc_small = scr_temp;
 				currMesh.textureSrc_large = scr_temp_large;
@@ -80,8 +95,8 @@ MeshArea.prototype =
 		if( this.bVisited )
 		for( var i = this.iStart; i <= this.iEnd; ++i )
 		{
-			//this.loadTexture( this, this.meshes[ i ].textureSrc_small, new THREE.UVMapping(), this.applyNewImageSwitchSize, i );
-			this.loadTexture( this, "http://www.martin-professional.de/color/small/blue101.1.gif", new THREE.UVMapping(), this.applyNewImageSwitchSize, i );
+			this.loadTexture( this, this.meshes[ i ].textureSrc_small, this.applyNewImageSwitchSize, i );
+			//this.loadTexture( this, "http://www.martin-professional.de/color/small/blue101.1.gif", this.applyNewImageSwitchSize, i );
 		}
 	},
 	
@@ -92,41 +107,38 @@ MeshArea.prototype =
 		{
 			//console.log( "Loading large pic at: " + this.meshes[ i ].textureSrc_large );
 			
-			//this.loadTexture( this, this.meshes[ i ].textureSrc_large, new THREE.UVMapping(), this.applyNewImageSwitchSize, i );
-			this.loadTexture( this, "http://www.martin-professional.de/color/large/red301.1.gif", new THREE.UVMapping(), this.applyNewImageSwitchSize, i );
+			//this.loadTexture( this, this.meshes[ i ].textureSrc_large, this.applyNewImageSwitchSize, i );
+			//this.loadTexture( this, "http://www.martin-professional.de/color/large/red301.1.gif", this.applyNewImageSwitchSize, i );
 		}
 	},
 	
-	loadTexture : function( meshArea, path, mapping, callback, i )
+	loadTexture : function( meshArea, path, callback, i )
 	{
-		var newImg = new Image(),
-			texture = new THREE.Texture( newImg, mapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearMipMapLinearFilter, THREE.LinearMipMapLinearFilter );
-
-		newImg.onload = function() { texture.needsUpdate = true; if( callback ) callback( meshArea, i, texture ); };
+		var newImg = new Image();
+		//var newImg = meshArea.meshes[ i ].materials[ 0 ].map.image;
 		newImg.src = path;
-
-		return texture; 
+		newImg.onload = function() { if( callback ) callback( newImg, meshArea, i ); };
+		
 	},
 
-	applyNewImageInit : function ( meshArea, iElement, texture )
+	applyNewImageInit : function ( img, meshArea, iElement )
 	{
 		var mesh = meshArea.meshes[ iElement ];
-		var fXscale = texture.image.width / mesh.width;
-		var fYscale = texture.image.height / mesh.height;
+		//var img = mesh.materials[ 0 ].map.image;
+		var fXscale = img.width / mesh.width;
+		var fYscale = img.height / mesh.height;
 		mesh.scale.x = fXscale;
 		mesh.scale.y = fYscale;
-		mesh.width = texture.image.width;
-		mesh.height = texture.image.height;
-		
-		mesh.materials[ 0 ].map = texture;
-		
-		
+			
+		mesh.materials[ 0 ].map.image = img;
+		mesh.materials[ 0 ].map.needsUpdate = true;
 	},
 	
-	applyNewImageSwitchSize : function( meshArea, iElement, texture )
+	applyNewImageSwitchSize : function( img, meshArea, iElement )
 	{
 		var mesh = meshArea.meshes[ iElement ];
-		mesh.materials[ 0 ].map = texture;
+		mesh.materials[ 0 ].map.image = img;
+		mesh.materials[ 0 ].map.needsUpdate = true;
 	},
 	
 	cameraEnter : function()
