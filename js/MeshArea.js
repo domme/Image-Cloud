@@ -9,6 +9,7 @@ MeshArea = function( params )
 	this.meshes = params.meshes;
 	this.animator = params.animator;
 	this.loadingTexture = params.loadingTexture;
+	this.urls = params.urls;
 	this.debugMesh;
 
 	// var loadingImg = new Image();
@@ -52,42 +53,72 @@ MeshArea.prototype =
 		}
 	},
 	
-	GetNewPhotos : function( )
-	{
-		var meshArea = this;
-		
+	// GetNewPhotos : function( )
+	// {
+	// 	var meshArea = this;
+	// 	
+	// 	for( var i = this.iStart; i <= this.iEnd; ++i )
+	// 			{
+	// 				var currMesh = this.meshes[ i ];
+	// 				currMesh.materials[ 0 ].map.image = this.loadingTexture;
+	// 				currMesh.materials[ 0 ].map.needsUpdate = true;
+	// 			}
+	// 	
+	// 	console.log( "http://img.ly/beautiful.json?page=" + meshArea.pageNumber + "&per_page=" + meshArea.count + "&jsoncallback=?" );
+	// 	$.getJSON("http://img.ly/beautiful.json?page=" + meshArea.pageNumber + "&per_page=" + meshArea.count + "&jsoncallback=?", function (data) 
+	// 	{
+	// 		$.each(data, function (i, item) 
+	// 		{	
+	// 			var scr_temp = item.scape_image_url;
+	// 			var scr_temp_large = item.image_url;
+	// 
+	// 			if( scr_temp.substr( 0,7 ) !== "http://" )		
+	// 				scr_temp = 'http://img.ly' + scr_temp;
+	// 
+	// 			if( scr_temp_large.substr( 0, 7 ) !== "http://" )
+	// 				scr_temp_large = 'http://img.ly' + scr_temp_large;
+	// 				
+	// 			var currMesh = meshArea.meshes[ meshArea.iStart + i ];
+	// 				
+	// 			currMesh.geometry = new THREE.Plane( currMesh.width, currMesh.height );
+	// 			currMesh.geometry.computeBoundingSphere();
+	// 						
+	// 			meshArea.loadTexture( meshArea, scr_temp, meshArea.applyNewImageInit, meshArea.iStart + i );
+	// 
+	// 			currMesh.textureSrc_small = scr_temp;
+	// 			currMesh.textureSrc_large = scr_temp_large;
+	// 		});
+	// 	});
+	// },
+	
+	
+	GetNewPhotos : function()
+	{	
 		for( var i = this.iStart; i <= this.iEnd; ++i )
-				{
-					var currMesh = this.meshes[ i ];
-					currMesh.materials[ 0 ].map.image = this.loadingTexture;
-					currMesh.materials[ 0 ].map.needsUpdate = true;
-				}
-		
-		console.log( "http://img.ly/beautiful.json?page=" + meshArea.pageNumber + "&per_page=" + meshArea.count + "&jsoncallback=?" );
-		$.getJSON("http://img.ly/beautiful.json?page=" + meshArea.pageNumber + "&per_page=" + meshArea.count + "&jsoncallback=?", function (data) 
 		{
-			$.each(data, function (i, item) 
-			{	
-				var scr_temp = item.scape_image_url;
-				var scr_temp_large = item.image_url;
-
-				if( scr_temp.substr( 0,7 ) !== "http://" )		
-					scr_temp = 'http://img.ly' + scr_temp;
-
-				if( scr_temp_large.substr( 0, 7 ) !== "http://" )
-					scr_temp_large = 'http://img.ly' + scr_temp_large;
-					
-				var currMesh = meshArea.meshes[ meshArea.iStart + i ];
-					
-				currMesh.geometry = new THREE.Plane( currMesh.width, currMesh.height );
-				currMesh.geometry.computeBoundingSphere();
-							
-				meshArea.loadTexture( meshArea, scr_temp, meshArea.applyNewImageInit, meshArea.iStart + i );
-
-				currMesh.textureSrc_small = scr_temp;
-				currMesh.textureSrc_large = scr_temp_large;
-			});
-		});
+			var currMesh = this.meshes[ i ];
+			currMesh.materials[ 0 ].map.image = this.loadingTexture;
+			currMesh.materials[ 0 ].map.needsUpdate = true;
+		}
+		
+		var iUrlStart = this.pageNumber * this.count;
+		var iUrlEnd = this.count + this.pageNumber * this.count - 1;
+		
+		var i = this.iStart;
+		for( var iUrl = iUrlStart; iUrl <= iUrlEnd; ++iUrl )
+		{
+			var currMesh = this.meshes[ i ];
+				
+			currMesh.geometry = new THREE.Plane( currMesh.width, currMesh.height );
+			currMesh.geometry.computeBoundingSphere();
+						
+			this.loadTexture( this, this.urls[ iUrl ].small, this.applyNewImageInit, i );
+			
+			currMesh.textureSrc_small = this.urls[ iUrl ].small;
+			currMesh.textureSrc_large = this.urls[ iUrl ].large;
+			
+			++i;
+		}
 	},
 	
 	switchToSmall : function()
@@ -107,7 +138,7 @@ MeshArea.prototype =
 		{
 			//console.log( "Loading large pic at: " + this.meshes[ i ].textureSrc_large );
 			
-			//this.loadTexture( this, this.meshes[ i ].textureSrc_large, this.applyNewImageSwitchSize, i );
+			this.loadTexture( this, this.meshes[ i ].textureSrc_large, this.applyNewImageSwitchSize, i );
 			//this.loadTexture( this, "http://www.martin-professional.de/color/large/red301.1.gif", this.applyNewImageSwitchSize, i );
 		}
 	},

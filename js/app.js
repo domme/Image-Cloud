@@ -47,7 +47,8 @@
 		container = document.createElement('div');
 		document.body.appendChild(container);
 		
-		renderer	= new THREE.WebGLRenderer( { stencil: true, antialias: false, clearColor: 0x000000 } );
+		var clearColor = 0x000000;
+		renderer	= new THREE.WebGLRenderer( { stencil: true, antialias: false, clearColor: clearColor, clearAlpha : 1 } );
 		renderer.setSize( window.innerWidth, window.innerHeight );
 		renderer.autoClear = false;
 		container.appendChild( renderer.domElement );
@@ -68,10 +69,9 @@
 		camera.fovHorizontal = 2 *( Math.atan( ( camera.farWidth / 2 ) / camera.far ) );
 	
 		scene 		= new THREE.Scene( );
-		//scene.fog = new THREE.Fog( 0xffffff, ( camera.far - camera.near ) - ( camera.far - camera.near ) * 0.25, camera.far - camera.near );
-		scene.fog = new THREE.FogExp2( 0xffffff, 0.0003 );
-		var cube = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
-		scene.addObject( cube );
+		scene.fog = new THREE.FogExp2( clearColor, 0.0003 );
+		//var cube = new THREE.Mesh( new THREE.Cube( 20, 20, 20 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
+		//scene.addObject( cube );
 	
 		colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
 		depthRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
@@ -104,8 +104,6 @@
 						newMesh.height = 256;
 						imageMeshes.push( newMesh );
 						imageMats.push( mat );
-			
-						scene.addObject( newMesh );
 					}
 		
 					loadingTexture = imageMeshes[ 0 ].materials[ 0 ];
@@ -113,19 +111,19 @@
 			
 					meshAreaManager = new MeshAreaManager( {
 						numMeshesMax : numImages,
-						numMeshesPerArea : 20,
+						numMeshesPerArea : 10,
 						camera : camera,
 						meshes : imageMeshes,
 						meshMaterials : imageMats,
-						v3DimensionsMin : new THREE.Vector3( -2500.0, -2500.0, 0.0 ),
-						v3DimensionsMax : new THREE.Vector3( 2500.0, 2500.0, 10000.0 ),
+						v3DimensionsMin : new THREE.Vector3( -2050.0, -2050.0, 0.0 ),
+						v3DimensionsMax : new THREE.Vector3( 2050.0, 2050.0, 9000.0 ),
 						animator : animator,
 						scene : scene,
 						loadingTexture : img	
 					} );
 		
 					particleImage = THREE.ImageUtils.loadTexture( "textures/particle1.png", new THREE.UVMapping() );
-					var particleMat = new THREE.MeshBasicMaterial( {color: 0x050505/*, map: particleImage */ } );
+					var particleMat = new THREE.MeshBasicMaterial( {color: clearColor == 0x000000 ? 0xD6D6D6 : 0x050505/*, map: particleImage */ } );
 					var geometry = new THREE.Geometry();
 		
 					for( var i = 0; i < 2000; ++i )
@@ -552,15 +550,13 @@
 	{
 		renderer.clear();
 		
-		// //Render scene in colorRT
-		
-		setRegularMats();
-		
 		if( !bDof )
 			renderer.render( scene, camera );
 		
 		else
 		{
+			// //Render scene in colorRT
+			setRegularMats();
 			renderer.render( scene, camera, colorRT, true );
 
 			//Render depth in depthRT

@@ -15,6 +15,9 @@ MeshAreaManager = function( params )
 	this.ThreeScene = params.scene;
 	this.loadingTexture = params.loadingTexture;
 	
+	this.urlFetchTimes = 1;
+	this.bInit = false;
+	
 	
 	this.numAreas = Math.ceil( this.numMeshesMax / this.numMeshesPerArea );
 	this.bDebug = true;
@@ -24,6 +27,7 @@ MeshAreaManager = function( params )
 	this.iLast = this.numAreas - 1;
 	this.iFirst = 0;
 	this.bDebug = false;	
+	this.urlFetchLock = false;
 	
 	this.oldCamPos = new THREE.Vector3( 0.0, 0.0, 0.0 );
 	
@@ -31,83 +35,141 @@ MeshAreaManager = function( params )
 
 	this.stepZ = lengthZ / this.numAreas;
 	
-	for( var i = 0; i < this.numAreas; ++i )
-	{
-		var currMin = new THREE.Vector3( this.v3DimensionsMin.x, this.v3DimensionsMin.y, - i * this.stepZ );
-		var currMax = new THREE.Vector3( this.v3DimensionsMax.x, this.v3DimensionsMax.y, - ( i + 1 ) * this.stepZ );
-		this.meshAreas.push( new MeshArea( { count : this.numMeshesPerArea,
-			 							pageNumber : i + 1,
-										v3Min : currMin,
-										v3Max : currMax,
-			 							iStart : i * this.numMeshesPerArea,
-			 							iEnd : ( i * this.numMeshesPerArea ) + ( this.numMeshesPerArea - 1 ),
-										meshes : this.meshes,
-										loadingTexture : this.loadingTexture
-									  } ) );
-			
-							
-		if( this.bDebug )
-		{
-			var geometry = new THREE.Geometry();
-			
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMin.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMin.z ) ) );
-			
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMin.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMin.z ) ) );
-			
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMin.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMin.z ) ) );
-			
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMin.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMin.z ) ) );
-			
-
-
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMin.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMax.z ) ) );
-			
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMin.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMax.z ) ) );
-			
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMin.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMax.z ) ) );
-			
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMin.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMax.z ) ) );
-			
-			
-			
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMax.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMax.z ) ) );
-			                                                                                       
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMax.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMax.z ) ) );
-			                                                                                       
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMax.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMax.z ) ) );
-			                                                                                       
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMax.z ) ) );
-			geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMax.z ) ) );
-			
-			var line_material = new THREE.LineBasicMaterial( { color: 0xff0000, opacity: 0.9 } );
-			var line = new THREE.Line( geometry, line_material, THREE.LinePieces );
-			
-			this.meshAreas[ this.meshAreas.length - 1 ].debugMesh = line;
-			
-			this.ThreeScene.addObject( line );
-		}
-	}
-	
-	this.areaPageTravelZ = Math.abs( this.meshAreas[ this.iLast ].v3Max.z - this.meshAreas[ this.iFirst ].v3Max.z ) + this.stepZ;	
+	this.GetNextURLs( 1000 );
 };
 
 MeshAreaManager.prototype =
 {
+	GetNextURLs : function( amount )
+	{
+		this.urlFetchLock = true;
+		var manager = this;
+				
+		$.getJSON("http://img.ly/beautiful.json?page=" + manager.urlFetchTimes + "&per_page=" + amount + "&jsoncallback=?", function (data) 
+		{
+			$.each(data, function (i, item) 
+			{	
+				var scr_temp = item.scape_image_url;
+				var scr_temp_large = item.image_url;
+
+				if( scr_temp.substr( 0,7 ) !== "http://" )		
+					scr_temp = 'http://img.ly' + scr_temp;
+
+				if( scr_temp_large.substr( 0, 7 ) !== "http://" )
+					scr_temp_large = 'http://img.ly' + scr_temp_large;
+					
+				manager.urls.push( { small : scr_temp, large : scr_temp_large } );
+			});
+			
+			manager.urlFetchLock = false;
+			
+			if( !manager.bInit )
+				manager.Init();
+
+		});
+		
+		manager.urlFetchTimes++;
+	},
+	
+	Init : function()
+	{
+		for( var i = 0; i < this.numAreas; ++i )
+		{
+			var currMin = new THREE.Vector3( this.v3DimensionsMin.x, this.v3DimensionsMin.y, - i * this.stepZ );
+			var currMax = new THREE.Vector3( this.v3DimensionsMax.x, this.v3DimensionsMax.y, - ( i + 1 ) * this.stepZ );
+			this.meshAreas.push( new MeshArea( { count : this.numMeshesPerArea,
+				 							pageNumber : i + 1,
+											v3Min : currMin,
+											v3Max : currMax,
+				 							iStart : i * this.numMeshesPerArea,
+				 							iEnd : ( i * this.numMeshesPerArea ) + ( this.numMeshesPerArea - 1 ),
+											meshes : this.meshes,
+											loadingTexture : this.loadingTexture,
+											urls : this.urls
+										  } ) );
+
+
+			if( this.bDebug )
+			{
+				var geometry = new THREE.Geometry();
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMin.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMin.z ) ) );
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMin.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMin.z ) ) );
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMin.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMin.z ) ) );
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMin.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMin.z ) ) );
+
+
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMin.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMax.z ) ) );
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMin.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMax.z ) ) );
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMin.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMax.z ) ) );
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMin.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMax.z ) ) );
+
+
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMax.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMax.z ) ) );
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMin.y, currMax.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMax.z ) ) );
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMax.x, currMax.y, currMax.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMax.z ) ) );
+
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMax.y, currMax.z ) ) );
+				geometry.vertices.push( new THREE.Vertex( new THREE.Vector3( currMin.x, currMin.y, currMax.z ) ) );
+
+				var line_material = new THREE.LineBasicMaterial( { color: 0xff0000, opacity: 0.9 } );
+				var line = new THREE.Line( geometry, line_material, THREE.LinePieces );
+
+				this.meshAreas[ this.meshAreas.length - 1 ].debugMesh = line;
+
+				this.ThreeScene.addObject( line );
+			}
+		}
+
+		for( var i = 0; i < this.meshes.length; ++i )
+		{
+			this.ThreeScene.addObject( this.meshes[ i ] );
+		}
+
+		this.areaPageTravelZ = Math.abs( this.meshAreas[ this.iLast ].v3Max.z - this.meshAreas[ this.iFirst ].v3Max.z ) + this.stepZ;
+		
+		this.bInit = true;
+		this.camera.bInit = true;
+		
+
+		
+		this.RebuildPositions();
+	},
+
 	Update : function()
 	{
+		if( !this.bInit )
+			return;
+			
 		var cPos = this.camera.position;
 		var cHeadingZ = cPos.z - this.oldCamPos.z;
+		
+		var iRemainingURLs = this.urls.length - this.meshAreas[ this.iLast ].pageNumber * this.meshAreas[ this.iLast ].count;
+		
+		if( iRemainingURLs < 500 && !this.urlFetchLock )
+			this.GetNextURLs( 2000 );
+		
 		
 		//if( Math.abs( cHeadingZ ) < 0.0001 ) //camera hasn't moved since last frame
 		//	return;
@@ -138,6 +200,8 @@ MeshAreaManager.prototype =
 				currArea.debugMesh.materials[ 0 ] = new THREE.LineBasicMaterial( { color: 0xff0000, opacity: 0.9 } );	
 		}
 		// /Debug
+		
+		
 		
 				
 		for( var i = 0; i < this.numAreas; ++i )
@@ -237,6 +301,9 @@ MeshAreaManager.prototype =
 	
 	RebuildPositions : function()
 	{
+		if( !this.bInit )
+			return;
+		
 		for( var i = 0; i < this.numAreas; ++i )
 		{
 			this.meshAreas[ i ].RebuildPositions( true );

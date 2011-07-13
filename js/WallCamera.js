@@ -50,12 +50,13 @@ THREE.WallCamera = function ( parameters )
 	baseOrientation.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), 0 );
 	newOrientation.copy( baseOrientation );
 		
-	
+	this.bInit = false;
 	this.lookSpeed = 1;
 	this.movementSpeed = 1;
 	this.rollSpeed = 1;
 	this.useTarget = false;
 	this.heading;
+	this.firstPos = this.position.clone();
 	
 	this.useQuaternion = true;
 	this.quaternion.copy( baseOrientation );
@@ -64,14 +65,26 @@ THREE.WallCamera = function ( parameters )
 	
 	this.update = function( boundsMin, boundsMax ) 
 	{
+		if( !this.bInit )
+			return;
+		
 		var time = new Date().getTime();
 		var t = time - lastTime;
 		
 		this.heading = heading;
 		                                           
-		this.position.x -= heading.x + posChange.x ;
-		this.position.y += heading.y + posChange.y ;
-		this.position.z += heading.z + posChange.z ;
+		this.position.x -= heading.x + posChange.x * t;
+		this.position.y += heading.y + posChange.y * t;
+		
+		
+		if( heading.z + posChange.z > 0 )
+		{
+			if( this.position.z < 2000 )
+				this.position.z += heading.z + posChange.z * t;
+		}
+		
+		else
+			this.position.z += heading.z + posChange.z * t;
 		                                           
 		posChange.x = 0;
 		posChange.y = 0;
@@ -111,12 +124,12 @@ THREE.WallCamera = function ( parameters )
 				newOrientation.copy( baseOrientation );
 		}
 		
-		if( !isCameraMoving() && !mouseDown && bAutoMove && viewMode == 2 )
+		if( !isCameraMoving() && !mouseDown && bAutoMove )
 		{
 			this.position.z -= constantZ * ( t / 1000 );
 		}
 		
-		else if( !isCameraMoving() && !mouseDown && !bAutoMove && viewMode == 2 )
+		else if( !isCameraMoving() && !mouseDown && !bAutoMove )
 		{
 			currAutoMovementTime += t;
 			if( currAutoMovementTime > startAutoMovementTime )
@@ -297,7 +310,7 @@ THREE.WallCamera = function ( parameters )
 		if( sign( event.wheelDeltaY ) != sign( heading.z ) )
 			heading.z = 0;
 			
-		heading.z -= event.wheelDeltaY / 40;
+		heading.z -= event.wheelDeltaY / 10;
 		checkHeading();
 	};
 
