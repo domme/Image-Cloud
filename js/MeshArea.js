@@ -38,7 +38,7 @@ MeshArea.prototype =
 			endPos.z = this.v3Min.z + ( this.v3Max.z - this.v3Min.z ) * Math.random();
 			
 			if( bAnimate )
-				animator.AddAnimation( { 
+				this.animator.AddAnimation( { 
 					interpolationType: "smoothstep", 
 					dataType: "Vector3", 
 					startValue: currMesh.position, 

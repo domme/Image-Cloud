@@ -85,6 +85,7 @@ MeshAreaManager.prototype =
 				 							iEnd : ( i * this.numMeshesPerArea ) + ( this.numMeshesPerArea - 1 ),
 											meshes : this.meshes,
 											loadingTexture : this.loadingTexture,
+											animator : this.animator,
 											urls : this.urls
 										  } ) );
 
