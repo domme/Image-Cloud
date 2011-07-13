@@ -60,7 +60,7 @@
 	
 		animator = new Animator();
 		
-		camera = new THREE.WallCamera( { fov:60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: renderer.domElement } );
+		camera = new THREE.CloudCamera( { fov:60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: renderer.domElement } );
 		camera.position.z = 1000;
 		camera.position.y = 10;
 
@@ -238,7 +238,12 @@
 				endPos.z += cameraGridBaseOffset;
 				
 			else //move towards image
+			{
 				endPos.z -= Math.max( zVert / 3, zHor / 3 );
+				camera.bImageViewMode = true;
+			}
+				
+
 			
 			animator.AddAnimation( { 
 				interpolationType: "weighted average",
@@ -538,7 +543,7 @@
 	function animate()
 	{
 		requestAnimationFrame( animate );
-		camera.update( imageBoundsMin, imageBoundsMax );
+		camera.update();
 		stats.update();
 		
 		meshAreaManager.Update();
