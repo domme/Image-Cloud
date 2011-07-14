@@ -40,7 +40,7 @@ function Animator()
 {
 	this.firstUpdate = true;
 	this.lastTime = new Date().getTime();
-	
+	this.bInit = false;
 	this.currAnimID = 0;
 	
 	this.animations = [];
@@ -136,6 +136,9 @@ function Animator()
 	
 	this.animate = function()
 	{
+		if( !this.bInit )
+			return;
+		
 		if( this.firstUpdate )
 		{
 			this.lastTime = new Date().getTime();
@@ -220,6 +223,31 @@ function Animator()
 		//delete trash
 		for( var i = 0; i < trash.length; ++i )
 		{
+			var anim = trash[ i ];
+			
+			if( anim.dataType == "Vector3" )
+		    {
+		    	anim.animValue.x = anim.endValue.x;
+		    	anim.animValue.y = anim.endValue.y;
+		    	anim.animValue.z = anim.endValue.z;
+	    	}
+            
+		    else if( anim.dataType == "Vector2" )
+		    {
+		    	anim.animValue.x = anim.endValue.x;
+				anim.animValue.y = anim.endValue.y;
+		    }
+            
+		    else if( anim.dataType == "Quaternion" )
+		    {
+				anim.animValue.copy( anim.endValue );
+		    }	
+		
+			else if( anim.dataType == "float" )
+			{
+				anim.animValue.value = anim.endValue;
+			}
+			
 			var idx = this.animations.indexOf( trash[ i ] );
 			this.animations.splice( idx, idx );
 		}

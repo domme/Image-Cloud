@@ -2,8 +2,8 @@ Postpro = function ( colorRT, depthRT )
 {
 	this.colorTexture = colorRT;
 	this.depthTexture = depthRT;
-	this.RT_1 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
-	this.RT_2 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+	this.RT_1 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
+	this.RT_2 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
 	this.scene = new THREE.Scene();
 	
 	this.camera = new THREE.Camera();
@@ -17,12 +17,13 @@ Postpro = function ( colorRT, depthRT )
 	//////////////////// Create Blur Material //////////////////////////////
 	var blurShader = AdditionalShaders[ "gauss" ];
 	var blurUniforms = THREE.UniformsUtils.clone( blurShader.uniforms );
-	var gaussKernelSize = 4;
+	var gaussKernelSize = 5;
 	var gaussTexture = new THREE.Texture( createGaussTexture( gaussKernelSize ), new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.NearestFilter );
 	gaussTexture.needsUpdate = true;
 	
 	blurUniforms[ "tImg" ].texture = this.colorTexture;
 	blurUniforms[ "tGauss" ].texture = gaussTexture;
+	blurUniforms[ "tDepth" ].texture = this.depthTexture;
 	blurUniforms[ "v2ImageSize" ].value = new THREE.Vector2( this.colorTexture.width, this.colorTexture.height );
 	blurUniforms[ "v2SamplingDir" ].value = new THREE.Vector2( 1.0, 0.0 );
 	
@@ -31,7 +32,7 @@ Postpro = function ( colorRT, depthRT )
 		vertexShader: "#define KERNEL_SIZE " + gaussKernelSize + ".0\n" + blurShader.vertexShader,
 		fragmentShader: "#define KERNEL_SIZE " + gaussKernelSize + ".0\n" + blurShader.fragmentShader,
 		blending: THREE.NormalBlending,
-		transparent: true
+		transparent: false
 	} );
 	
 	this.effects[ "gauss" ] = matGauss;
@@ -52,7 +53,7 @@ Postpro = function ( colorRT, depthRT )
 		vertexShader: dofShader.vertexShader,
 		fragmentShader: dofShader.fragmentShader,
 		blending: THREE.NormalBlending,
-		transparent: true
+		transparent: false
 	   } );
 	
 	this.effects[ "dof" ] = matDof;

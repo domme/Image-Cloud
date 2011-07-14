@@ -7,6 +7,7 @@ MeshArea = function( params )
 	this.iStart = params.iStart !== undefined ? params.iStart : 0;
 	this.iEnd = params.iEnd !== undefined ? params.iEnd : this.count - 1;
 	this.meshes = params.meshes;
+	this.meshMaterials = params.meshMaterials;
 	this.animator = params.animator;
 	this.loadingTexture = params.loadingTexture;
 	this.urls = params.urls;
@@ -96,9 +97,9 @@ MeshArea.prototype =
 	{	
 		for( var i = this.iStart; i <= this.iEnd; ++i )
 		{
-			var currMesh = this.meshes[ i ];
-			currMesh.materials[ 0 ].map.image = this.loadingTexture;
-			currMesh.materials[ 0 ].map.needsUpdate = true;
+			var currMat = this.meshMaterials[ i ];
+			currMat.map.image = this.loadingTexture;
+			currMat.map.needsUpdate = true;
 		}
 		
 		var iUrlStart = this.pageNumber * this.count;
@@ -161,15 +162,16 @@ MeshArea.prototype =
 		mesh.scale.x = fXscale;
 		mesh.scale.y = fYscale;
 			
-		mesh.materials[ 0 ].map.image = img;
-		mesh.materials[ 0 ].map.needsUpdate = true;
+		var currMat = meshArea.meshMaterials[ iElement ];
+		currMat.map.image = img;
+		currMat.map.needsUpdate = true;
 	},
 	
 	applyNewImageSwitchSize : function( img, meshArea, iElement )
 	{
-		var mesh = meshArea.meshes[ iElement ];
-		mesh.materials[ 0 ].map.image = img;
-		mesh.materials[ 0 ].map.needsUpdate = true;
+		var currMat = meshArea.meshMaterials[ iElement ];
+		currMat.map.image = img;
+		currMat.map.needsUpdate = true;
 	},
 	
 	cameraEnter : function()

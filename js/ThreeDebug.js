@@ -9185,6 +9185,10 @@ THREE.WebGLRenderer = function ( parameters ) {
 		_gl.depthMask( enable );
 
 	};
+	
+	this.enableColorBufferWrite = function( enableR, enableG, enableB, enableA ) {
+		_gl.colorMask( enableR, enableG, enableB, enableA );
+	};
 
 	this.setClearColorHex = function ( hex, alpha ) {
 

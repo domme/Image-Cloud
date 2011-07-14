@@ -1,6 +1,48 @@
 AdditionalShaders = {
 	
 	
+	'depthLinear' : 
+	{
+		uniforms : { "mNear" : { type: "f", value: 1.0 }, 
+					 "mFar": { type:"f", value: 10000.0 },
+					 "opacity" : { type: "f", value: 1.0 } 
+					},
+							
+		vertexShader: 
+		[
+			"precision highp float;",
+			"uniform float mNear;",
+			"uniform float mFar;",
+			
+			"varying highp float fDepth;",
+			
+			"void main() {",
+				"vec4 v4ViewPos  = modelViewMatrix * vec4( position, 1.0 );",
+				"fDepth = abs( v4ViewPos.z / mFar );",
+				
+				"gl_Position = projectionMatrix * v4ViewPos;",
+			"}"
+		].join( "\n" ),
+				
+		fragmentShader: 
+		[
+			"precision highp float;",
+			"uniform float opacity;",
+			"varying highp float fDepth;",
+			
+			"highp vec3 packFloatXYZ( float fValue )",
+			"{",
+				"highp vec3 packValues = vec3( 256.0 * 256.0, 256.0, 1.0 );",
+				"return fract( packValues * vec3( fValue ) );",
+			"}",
+
+			"void main() {",
+				"highp vec3 packedDepth = packFloatXYZ( fDepth );",
+				"gl_FragColor = vec4( packedDepth.x, packedDepth.y, packedDepth.z, 1.0 );",
+			"}"
+		].join("\n"),
+	},
+	
 	'dofInterpolate':
 	{
 		uniforms: { "tImg" : { type: "t", value: 0, texture: null },
@@ -19,23 +61,39 @@ AdditionalShaders = {
 		     gl_Position = vec4( position, 1.0 );  \n\
 		  }",
 		
-		fragmentShader:
-			"precision highp float;																		\n\
-			uniform sampler2D tImg;                                                                     \n\
-			uniform sampler2D tBlurred;                                                                 \n\
-			uniform sampler2D tDepth;                                                                   \n\
-			uniform float fFocusDepth;                                                                  \n\
-			                                                                                            \n\
-			varying vec2 v2uv;                                                                          \n\
-			                                                                                            \n\
-			void main()                                                                                 \n\
-			{                                                                                           \n\
-				float fDepth = texture2D( tDepth, v2uv ).x;                                             \n\
-				float fFocus = abs( abs( fDepth ) - abs( fFocusDepth ) );                 				\n\
-				  																						\n\
-																										\n\
-				gl_FragColor = mix( texture2D( tImg, v2uv ), texture2D( tBlurred, v2uv ), clamp( fFocus * 5.0, 0.0, 1.0 ) );     \n\
-			}"
+		fragmentShader:                  
+			"precision highp float;                                                                                               \n\
+			uniform sampler2D tImg;                                                                                               \n\
+			uniform sampler2D tBlurred;                                                                                           \n\
+			uniform sampler2D tDepth;                                                                                             \n\
+			uniform float fFocusDepth;                                                                                            \n\
+			                                                                                                                      \n\
+			varying vec2 v2uv; 			                                                                                          \n\
+			                                                                                                                      \n\
+																																  \n\
+			highp float unpackFloatRGB( vec3 vValue )                                                                             \n\
+			{                                                                                                                     \n\
+				highp vec3 v3UnpackValues = vec3( 1.0 / ( 256.0 * 256.0 ), 1.0 / 256.0, 1.0 );   								  \n\
+				return dot( vValue, v3UnpackValues );                                                                             \n\
+			}                                                                				   							 		  \n\
+			                                                                                           							  \n\
+			void main()                                                                                							  \n\
+			{                                                                                          							  \n\
+				float fDepth = unpackFloatRGB( texture2D( tDepth, v2uv ).xyz );                        							  \n\
+				mediump vec4 imgCol = texture2D( tImg, v2uv );                                                                    \n\
+				mediump vec4 blurredCol = texture2D( tBlurred, v2uv );                                                            \n\
+				                                                                                                                  \n\
+				if( fDepth < 1.00 )                                                                                               \n\
+				{                                                                                                                 \n\
+				    float fFocus = abs( abs( fDepth ) - abs( fFocusDepth ) );                 			   						  \n\
+					gl_FragColor = mix( imgCol, blurredCol, clamp( fFocus, 0.0, 1.0 ) );      									  \n\
+				}                                                                                                                 \n\
+				                                                                                                                  \n\
+				else                                                                                                              \n\
+				{                                                                                                                 \n\
+					gl_FragColor = imgCol;                                                                                        \n\
+				}                                                                                                                 \n\
+			}"					
 	},
 	
 	
@@ -43,6 +101,7 @@ AdditionalShaders = {
 	{
 		uniforms: { "tImg" : { type: "t", value: 0, texture: null },
 					"tGauss" : { type: "t", value: 1, texture: null },
+					"tDepth" : { type: "t", value: 2, texture: null },
 					"v2ImageSize": { type: "v2", value: new THREE.Vector2( 1024, 768 ) },
 					"v2SamplingDir": { type: "v2", value: new THREE.Vector2( 1, 0 ) },
 		 			},
@@ -59,14 +118,15 @@ AdditionalShaders = {
 		
 		
 		fragmentShader:
-			"precision highp float;																		\n\
-			uniform sampler2D tImg;                                                                     \n\
-			uniform sampler2D tGauss;                                                                   \n\
-			uniform vec2 v2ImageSize;                                                                   \n\
-			uniform vec2 v2SamplingDir;                                                                 \n\
-			                                                                                            \n\
-			varying vec2 v2uv;                                                                          \n\
-			                                                                                            \n\
+			"precision highp float;	  \n\
+			uniform sampler2D tImg;   \n\
+			uniform sampler2D tGauss; \n\
+			uniform sampler2D tDepth; \n\
+			uniform vec2 v2ImageSize; \n\
+			uniform vec2 v2SamplingDir;     \n\
+			                                \n\
+			varying vec2 v2uv;              \n\
+			                                \n\
 			float fGaussStep = 1.0 / ( KERNEL_SIZE + 1.0 );                                             \n\
 			float fGaussStepHalf = fGaussStep / 2.0;                                                    \n\
 			                                                                                            \n\
@@ -112,7 +172,7 @@ AdditionalShaders = {
 			                                                                                            \n\
 			void main()                                                                                 \n\
 			{                                                                                           \n\
-			   gl_FragColor = vec4( blurGauss().xyz, 1.0 );                                             \n\
+				gl_FragColor = vec4( blurGauss().xyz, 1.0 );                                            \n\
 			}",                                                                                         
 	},                                            
 	
@@ -283,42 +343,6 @@ AdditionalShaders = {
 			"}"
 		].join( "\n" ),
 	},
-
-	'depthLinear' : 
-	{
-		uniforms : { "mNear" : { type: "f", value: 1.0 }, 
-					 "mFar": { type:"f", value: 10000.0 },
-					 "opacity" : { type: "f", value: 1.0 } 
-					},
-							
-		vertexShader: 
-		[
-			"precision highp float;",
-			"uniform float mNear;",
-			"uniform float mFar;",
-			
-			"varying float fDepth;",
-			
-			"void main() {",
-				"vec4 v4ViewPos  = modelViewMatrix * vec4( position, 1.0 );",
-				"fDepth = abs( v4ViewPos.z / mFar );",
-				
-				"gl_Position = projectionMatrix * v4ViewPos;",	
-			"}"
-		].join( "\n" ),
-				
-		fragmentShader: 
-		[
-			"precision highp float;",
-			"uniform float opacity;",
-			"varying float fDepth;",
-
-			"void main() {",
-				"gl_FragColor = vec4( vec3( fDepth ), opacity );",
-			"}"
-		].join("\n"),
-	},
-	
 	
 	'ssaoPostpro' : 
 	{

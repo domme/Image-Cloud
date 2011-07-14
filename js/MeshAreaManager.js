@@ -14,7 +14,6 @@ MeshAreaManager = function( params )
 	this.animator = params.animator;
 	this.ThreeScene = params.scene;
 	this.loadingTexture = params.loadingTexture;
-	
 	this.urlFetchTimes = 1;
 	this.bInit = false;
 	
@@ -84,6 +83,7 @@ MeshAreaManager.prototype =
 				 							iStart : i * this.numMeshesPerArea,
 				 							iEnd : ( i * this.numMeshesPerArea ) + ( this.numMeshesPerArea - 1 ),
 											meshes : this.meshes,
+											meshMaterials : this.meshMaterials,
 											loadingTexture : this.loadingTexture,
 											animator : this.animator,
 											urls : this.urls
@@ -154,7 +154,7 @@ MeshAreaManager.prototype =
 		this.camera.bInit = true;
 		
 
-		
+		this.animator.bInit = true;
 		this.RebuildPositions();
 	},
 

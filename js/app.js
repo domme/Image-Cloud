@@ -1,110 +1,4 @@
-AppInputWrapper = function( cloudApp )
-{
-	var app = cloudApp;
-	var wrapper = this;
 
-	this.onMouseMove = function( event )
-	{
-		app.mouseScenePos.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-		app.mouseScenePos.y = ( ( window.innerHeight - event.clientY ) / window.innerHeight ) * 2 - 1;
-		app.mouseScenePos.z = app.camera.near;
-		
-		app.handleMousePick();
-		
-		if( app.lastPickedMesh != null && app.pickedMesh != app.lastPickedMesh )
-		{
-			app.lastPickedMesh.scale.x /= app.pickScaleIncrease;
-			app.lastPickedMesh.scale.y /= app.pickScaleIncrease;
-		}
-		
-		if( app.pickedMesh != null && app.pickedMesh != app.lastPickedMesh )
-		{
-			app.pickedMesh.scale.x *= app.pickScaleIncrease;
-			app.pickedMesh.scale.y *= app.pickScaleIncrease;
-		}
-		
-		
-		//calculate the current depth of the picked element
-		if( app.pickedMesh != null )
-		{
-			var posVS = new THREE.Vector3();
-			posVS.clone( app.pickedMesh.position );
-			var posVS4 = new THREE.Vector4( posVS.x, posVS.y, posVS.z, 1.0 );
-			
-			var view = app.camera.matrixWorldInverse;
-			posVS4 = view.multiplyVector4( posVS4 );
-			
-			//postpro.depthFocus = Math.abs( posVS4.z / camera.far );
-			app.animator.AddAnimation( { 
-		 		 		interpolationType: "smoothstep", 
-		 		 		dataType: "float", 
-		 		 		startValue: app.postpro.depthFocus.value, 
-		 		 		endValue: Math.abs( app.pickedMesh.position.z - app.camera.position.z ) / app.camera.far, 
-		 		 		animValue: app.postpro.depthFocus,
-		 		 		duration: 500,
-		 		 		repetition: "oneShot"
-		 		 	  } );
-		}
-		
-		app.lastPickedMesh = app.pickedMesh;
-		
-	}
-	
-	this.onKeyUp = function( event ) 
-	{
-		switch( event.keyCode ) 
-		{
-			case 82: /*R*/ 
-				app.togglePerspective();
-			break;
-		}
-	}
-	
-	this.onDoubleClick = function( event )
-	{
-		if( app.pickedMesh != null )
-		{
-			var endPos = new THREE.Vector3();
-			endPos.copy( app.pickedMesh.position );
-			var zVert = app.pickedMesh.height / 2 * Math.tan( app.camera.fov / 2 );
-			var zHor = app.pickedMesh.width / 2 * Math.tan( app.camera.fovHorizontal / 2 );
-			
-			endPos.z -= Math.max( zVert / 3, zHor / 3 );
-			app.camera.bImageViewMode = true;
-			
-			app.animator.AddAnimation( { 
-				interpolationType: "weighted average",
-				dataType: "Vector3", 
-				startValue: camera.position, 
-				endValue: endPos, 
-				animValue: camera.position,
-				duration: 1000,
-				repetition: "oneShot"
-			  } );
-		}
-	}
-	
-	this.onMouseClick = function( event )
-	{
-		//Handle Gui
-		// var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
-		// 	if( intersectsGui.length > 0 )
-		// 	{
-		// 		intersectsGui[ 0 ].object.onMouseClick();
-		// 	}
-	}
-	
-	this.animate = function()
-	{
-		requestAnimationFrame( wrapper.animate );	
-		app.camera.update();
-		app.stats.update();
-		
-		app.meshAreaManager.Update();
-		app.animator.animate();
-		app.render();
-	}
-}
 
 ImageCloudApp = function()
 {
@@ -127,7 +21,7 @@ ImageCloudApp = function()
 		this.container = document.createElement('div');
 		document.body.appendChild( this.container );
 		
-		this.clearColor = 0x000000;
+		this.clearColor = 0xffffff;
 		this.renderer	= new THREE.WebGLRenderer( { stencil: true, antialias: false, clearColor: this.clearColor, clearAlpha : 1 } );
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.renderer.autoClear = false;
@@ -151,8 +45,8 @@ ImageCloudApp = function()
 		this.scene= new THREE.Scene( );
 		this.scene.fog = new THREE.FogExp2( this.clearColor, 0.0003 );
 	
-		this.colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, stencilBuffer: false } );
-		this.depthRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBFormat, stencilBuffer: false } );
+		this.colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
+		this.depthRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
 		this.postpro = new Postpro( this.colorRT, this.depthRT );
 		
 		var depthShader = AdditionalShaders[ 'depthLinear' ];
@@ -165,7 +59,7 @@ ImageCloudApp = function()
 								fragmentShader: depthShader.fragmentShader,
 								vertexShader: depthShader.vertexShader,
 								blending: THREE.NormalBlending,
-								transparent: true
+								transparent: false
 							} );
 		
 		var bTexLoaded = false;
@@ -232,12 +126,12 @@ ImageCloudApp = function()
 					app.container.onclick = app.inputWrapper.onMouseClick;
 		
 					app.container.ondblclick = app.inputWrapper.onDoubleClick;
-					document.body.onkeyup = app.onKeyUp;
+					document.body.onkeyup = app.inputWrapper.onKeyUp;
 		
 					app.rebuildPositions();
 		
 					//Start loop:
-					app.inputWrapper.animate();	
+					app.inputWrapper.animate();
  			} );
 
 
@@ -504,5 +398,114 @@ function updateBounds( pos, boundMin, boundMax )
 		boundMin.z = pos.z;
 	if( pos.z > boundMax.z )
 		boundMax.z = pos.z;
+};
+
+
+AppInputWrapper = function( cloudApp )
+{
+	var app = cloudApp;
+	var wrapper = this;
+
+	this.onMouseMove = function( event )
+	{
+		app.mouseScenePos.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+		app.mouseScenePos.y = ( ( window.innerHeight - event.clientY ) / window.innerHeight ) * 2 - 1;
+		app.mouseScenePos.z = app.camera.near;
+		
+		app.handleMousePick();
+		
+		if( app.lastPickedMesh != null && app.pickedMesh != app.lastPickedMesh )
+		{
+			app.lastPickedMesh.scale.x /= app.pickScaleIncrease;
+			app.lastPickedMesh.scale.y /= app.pickScaleIncrease;
+		}
+		
+		if( app.pickedMesh != null && app.pickedMesh != app.lastPickedMesh )
+		{
+			app.pickedMesh.scale.x *= app.pickScaleIncrease;
+			app.pickedMesh.scale.y *= app.pickScaleIncrease;
+		}
+		
+		
+		//calculate the current depth of the picked element
+		if( app.pickedMesh != null )
+		{
+			var posVS = new THREE.Vector3();
+			posVS.clone( app.pickedMesh.position );
+			var posVS4 = new THREE.Vector4( posVS.x, posVS.y, posVS.z, 1.0 );
+			
+			var view = app.camera.matrixWorldInverse;
+			posVS4 = view.multiplyVector4( posVS4 );
+			
+			//postpro.depthFocus = Math.abs( posVS4.z / camera.far );
+			app.animator.AddAnimation( { 
+		 		 		interpolationType: "smoothstep", 
+		 		 		dataType: "float", 
+		 		 		startValue: app.postpro.depthFocus.value, 
+		 		 		endValue: Math.abs( app.pickedMesh.position.z - app.camera.position.z ) / app.camera.far, 
+		 		 		animValue: app.postpro.depthFocus,
+		 		 		duration: 500,
+		 		 		repetition: "oneShot"
+		 		 	  } );
+		}
+		
+		app.lastPickedMesh = app.pickedMesh;
+		
+	}
+	
+	this.onKeyUp = function( event ) 
+	{
+		switch( event.keyCode ) 
+		{
+			case 82: /*R*/ 
+				app.togglePerspective();
+			break;
+		}
+	}
+	
+	this.onDoubleClick = function( event )
+	{
+		if( app.pickedMesh != null )
+		{
+			var endPos = new THREE.Vector3();
+			endPos.copy( app.pickedMesh.position );
+			var zVert = app.pickedMesh.height / 2 * Math.tan( app.camera.fov / 2 );
+			var zHor = app.pickedMesh.width / 2 * Math.tan( app.camera.fovHorizontal / 2 );
+			
+			endPos.z -= Math.max( zVert / 3, zHor / 3 );
+			app.camera.bImageViewMode = true;
+			
+			app.animator.AddAnimation( { 
+				interpolationType: "weighted average",
+				dataType: "Vector3", 
+				startValue: camera.position, 
+				endValue: endPos, 
+				animValue: camera.position,
+				duration: 1000,
+				repetition: "oneShot"
+			  } );
+		}
+	}
+	
+	this.onMouseClick = function( event )
+	{
+		//Handle Gui
+		// var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
+		// 	if( intersectsGui.length > 0 )
+		// 	{
+		// 		intersectsGui[ 0 ].object.onMouseClick();
+		// 	}
+	}
+	
+	this.animate = function()
+	{
+		requestAnimationFrame( wrapper.animate );	
+		app.camera.update();
+		app.stats.update();
+		
+		app.meshAreaManager.Update();
+		app.animator.animate();
+		app.render();
+	}
 }
 

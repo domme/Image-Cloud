@@ -143,13 +143,18 @@ THREE.CloudCamera = function ( parameters )
 
 		var t = ( new Date().getTime() - this.tLast ) / 1000.0;
 		
+		var regressionX = Math.max( 0.99 - 0.9 * t, 0.1 );
+		var regressionY = Math.max( 0.99 - 0.9 * t, 0.1 );
+		var regressionZ = Math.max( 1.0 - 0.9 * t, 0.1 );
+
+		
 		this.position.x += ( this.heading.x + this.posChange.x ) * t;
 		this.position.y += ( this.heading.y + this.posChange.y ) * t;
 		this.position.z += ( this.heading.z + this.posChange.z ) * t;
 		
-		this.heading.x *= 0.99;
-		this.heading.y *= 0.99;
-		this.heading.z *= 0.99;
+		this.heading.x *= regressionX;
+		this.heading.y *= regressionY;
+		this.heading.z *= regressionZ;
 		
 		
 		if( this.dragStarted )
@@ -173,7 +178,7 @@ THREE.CloudCamera = function ( parameters )
 		
 		if( this.heading.isZero() && this.bAutoMove && !this.bImageViewMode )
 		{
-			this.position.z -= this.zAutoMoveSpeed * t;
+			//this.position.z -= this.zAutoMoveSpeed * t;
 		}
 		
 		else if( this.heading.isZero() && !this.bAutoMove && !this.bImageViewMode )
