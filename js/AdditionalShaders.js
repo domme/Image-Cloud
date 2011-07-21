@@ -91,7 +91,7 @@ AdditionalShaders = {
 				                                                                                                                  \n\
 				else                                                                                                              \n\
 				{                                                                                                                 \n\
-					gl_FragColor = imgCol;                                                                                        \n\
+					gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );                                                                    \n\
 				}                                                                                                                 \n\
 			}"					
 	},
@@ -172,8 +172,14 @@ AdditionalShaders = {
 			                                                                                            \n\
 			void main()                                                                                 \n\
 			{                                                                                           \n\
-				gl_FragColor = vec4( blurGauss().xyz, 1.0 );                                            \n\
-			}",                                                                                         
+				float fDepth = texture2D( tDepth, v2uv ).z;                                             \n\
+				                                                                                        \n\
+				if( fDepth < 0.99 )                                                                     \n\
+					gl_FragColor = vec4( blurGauss().xyz, 1.0 );                                        \n\
+				                                                                                        \n\
+				else                                                                                    \n\
+					gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );								            \n\
+			}"
 	},                                            
 	
 	

@@ -11,15 +11,33 @@ MeshArea = function( params )
 	this.animator = params.animator;
 	this.loadingTexture = params.loadingTexture;
 	this.urls = params.urls;
+	this.clearColor = params.clearColor;
+	this.ThreeScene = params.scene;
 	this.debugMesh;
+	this.particleMesh;
 
-	// var loadingImg = new Image();
-	// loadingImg.src = "textures/loading.jpg";
-	// 
-	// for( var i = this.iStart; i <= this.iEnd; ++i )
-	// {
-	// 	this.meshes[ i ].materials = [ new THREE.MeshBasicMaterial ]
-	// }	
+	
+	this.particleMat = new THREE.MeshBasicMaterial( {color: this.clearColor == 0x000000 ? 0xD6D6D6 : 0x050505/*, map: particleImage */ } );
+	var geometry = new THREE.Geometry();
+
+	for( var i = 0; i < 20; ++i )
+	{
+		var tempParticleMesh = new THREE.Mesh( new THREE.PlaneGeometry( 10, 10 ) );
+		var endPos = new THREE.Vector3();
+
+		endPos.x = this.v3Min.x + ( this.v3Max.x - this.v3Min.x ) * Math.random();
+		endPos.y = this.v3Min.y + ( this.v3Max.y - this.v3Min.y ) * Math.random();
+		endPos.z = this.v3Min.z + ( this.v3Max.z - this.v3Min.z ) * Math.random();
+
+		tempParticleMesh.position.x = endPos.x;
+		tempParticleMesh.position.y = endPos.y;
+		tempParticleMesh.position.z = endPos.z;
+
+		GeometryUtils.merge( geometry, tempParticleMesh );
+	}
+
+	this.particleMesh = new THREE.Mesh(  geometry, this.particleMat );
+	this.ThreeScene.addObject( this.particleMesh );
 	
 	this.GetNewPhotos();
 };
@@ -54,45 +72,6 @@ MeshArea.prototype =
 		}
 	},
 	
-	// GetNewPhotos : function( )
-	// {
-	// 	var meshArea = this;
-	// 	
-	// 	for( var i = this.iStart; i <= this.iEnd; ++i )
-	// 			{
-	// 				var currMesh = this.meshes[ i ];
-	// 				currMesh.materials[ 0 ].map.image = this.loadingTexture;
-	// 				currMesh.materials[ 0 ].map.needsUpdate = true;
-	// 			}
-	// 	
-	// 	console.log( "http://img.ly/beautiful.json?page=" + meshArea.pageNumber + "&per_page=" + meshArea.count + "&jsoncallback=?" );
-	// 	$.getJSON("http://img.ly/beautiful.json?page=" + meshArea.pageNumber + "&per_page=" + meshArea.count + "&jsoncallback=?", function (data) 
-	// 	{
-	// 		$.each(data, function (i, item) 
-	// 		{	
-	// 			var scr_temp = item.scape_image_url;
-	// 			var scr_temp_large = item.image_url;
-	// 
-	// 			if( scr_temp.substr( 0,7 ) !== "http://" )		
-	// 				scr_temp = 'http://img.ly' + scr_temp;
-	// 
-	// 			if( scr_temp_large.substr( 0, 7 ) !== "http://" )
-	// 				scr_temp_large = 'http://img.ly' + scr_temp_large;
-	// 				
-	// 			var currMesh = meshArea.meshes[ meshArea.iStart + i ];
-	// 				
-	// 			currMesh.geometry = new THREE.Plane( currMesh.width, currMesh.height );
-	// 			currMesh.geometry.computeBoundingSphere();
-	// 						
-	// 			meshArea.loadTexture( meshArea, scr_temp, meshArea.applyNewImageInit, meshArea.iStart + i );
-	// 
-	// 			currMesh.textureSrc_small = scr_temp;
-	// 			currMesh.textureSrc_large = scr_temp_large;
-	// 		});
-	// 	});
-	// },
-	
-	
 	GetNewPhotos : function()
 	{	
 		for( var i = this.iStart; i <= this.iEnd; ++i )
@@ -109,11 +88,8 @@ MeshArea.prototype =
 		for( var iUrl = iUrlStart; iUrl <= iUrlEnd; ++iUrl )
 		{
 			var currMesh = this.meshes[ i ];
-				
-			currMesh.geometry = new THREE.Plane( currMesh.width, currMesh.height );
-			currMesh.geometry.computeBoundingSphere();
 						
-			this.loadTexture( this, this.urls[ iUrl ].small, this.applyNewImageInit, i );
+			this.replaceTexture( this, this.urls[ iUrl ].small, this.applyNewImageInit, i );
 			
 			currMesh.textureSrc_small = this.urls[ iUrl ].small;
 			currMesh.textureSrc_large = this.urls[ iUrl ].large;
@@ -127,7 +103,7 @@ MeshArea.prototype =
 		if( this.bVisited )
 		for( var i = this.iStart; i <= this.iEnd; ++i )
 		{
-			this.loadTexture( this, this.meshes[ i ].textureSrc_small, this.applyNewImageSwitchSize, i );
+			this.replaceTexture( this, this.meshes[ i ].textureSrc_small, this.applyNewImageSwitchSize, i );
 			//this.loadTexture( this, "http://www.martin-professional.de/color/small/blue101.1.gif", this.applyNewImageSwitchSize, i );
 		}
 	},
@@ -139,15 +115,15 @@ MeshArea.prototype =
 		{
 			//console.log( "Loading large pic at: " + this.meshes[ i ].textureSrc_large );
 			
-			this.loadTexture( this, this.meshes[ i ].textureSrc_large, this.applyNewImageSwitchSize, i );
+			this.replaceTexture( this, this.meshes[ i ].textureSrc_large, this.applyNewImageSwitchSize, i );
 			//this.loadTexture( this, "http://www.martin-professional.de/color/large/red301.1.gif", this.applyNewImageSwitchSize, i );
 		}
 	},
 	
-	loadTexture : function( meshArea, path, callback, i )
+	replaceTexture : function( meshArea, path, callback, i )
 	{
 		var newImg = new Image();
-		//var newImg = meshArea.meshes[ i ].materials[ 0 ].map.image;
+		//var newImg = meshArea.meshMaterials[ i ].map.image;
 		newImg.src = path;
 		newImg.onload = function() { if( callback ) callback( newImg, meshArea, i ); };
 		
@@ -163,6 +139,7 @@ MeshArea.prototype =
 		mesh.scale.y = fYscale;
 			
 		var currMat = meshArea.meshMaterials[ iElement ];
+		delete currMat.map.image;
 		currMat.map.image = img;
 		currMat.map.needsUpdate = true;
 	},
@@ -170,6 +147,7 @@ MeshArea.prototype =
 	applyNewImageSwitchSize : function( img, meshArea, iElement )
 	{
 		var currMat = meshArea.meshMaterials[ iElement ];
+		delete currMat.map.image;
 		currMat.map.image = img;
 		currMat.map.needsUpdate = true;
 	},

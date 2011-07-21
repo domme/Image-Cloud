@@ -14,6 +14,7 @@ MeshAreaManager = function( params )
 	this.animator = params.animator;
 	this.ThreeScene = params.scene;
 	this.loadingTexture = params.loadingTexture;
+	this.clearColor = params.clearColor;
 	this.urlFetchTimes = 1;
 	this.bInit = false;
 	
@@ -34,7 +35,7 @@ MeshAreaManager = function( params )
 
 	this.stepZ = lengthZ / this.numAreas;
 	
-	this.GetNextURLs( 1000 );
+	this.GetNextURLs( 2000 );
 };
 
 MeshAreaManager.prototype =
@@ -59,6 +60,8 @@ MeshAreaManager.prototype =
 					
 				manager.urls.push( { small : scr_temp, large : scr_temp_large } );
 			});
+			
+			delete data;
 			
 			manager.urlFetchLock = false;
 			
@@ -86,7 +89,9 @@ MeshAreaManager.prototype =
 											meshMaterials : this.meshMaterials,
 											loadingTexture : this.loadingTexture,
 											animator : this.animator,
-											urls : this.urls
+											urls : this.urls,
+											clearColor: this.clearColor,
+											scene : this.ThreeScene
 										  } ) );
 
 
@@ -169,7 +174,7 @@ MeshAreaManager.prototype =
 		var iRemainingURLs = this.urls.length - this.meshAreas[ this.iLast ].pageNumber * this.meshAreas[ this.iLast ].count;
 		
 		if( iRemainingURLs < 500 && !this.urlFetchLock )
-			this.GetNextURLs( 2000 );
+			this.GetNextURLs( 1000 );
 		
 		
 		//if( Math.abs( cHeadingZ ) < 0.0001 ) //camera hasn't moved since last frame
@@ -250,6 +255,8 @@ MeshAreaManager.prototype =
 						if( this.bDebug )
 							firstArea.debugMesh.position = new THREE.Vector3( firstArea.debugMesh.position.x, firstArea.debugMesh.position.y, firstArea.debugMesh.position.z - this.areaPageTravelZ );
 						
+						firstArea.particleMesh.position.z -= this.areaPageTravelZ
+						
 						firstArea.pageNumber = lastArea.pageNumber + 1;
 						
 						firstArea.GetNewPhotos();
@@ -275,6 +282,8 @@ MeshAreaManager.prototype =
 						
 						if( this.bDebug )
 							lastArea.debugMesh.position =  new THREE.Vector3( lastArea.debugMesh.position.x, lastArea.debugMesh.position.y, lastArea.debugMesh.position.z + this.areaPageTravelZ );
+						
+						lastArea.particleMesh.position.z += this.areaPageTravelZ;
 						
 						lastArea.pageNumber = firstArea.pageNumber - 1;	
 						
@@ -308,6 +317,22 @@ MeshAreaManager.prototype =
 		for( var i = 0; i < this.numAreas; ++i )
 		{
 			this.meshAreas[ i ].RebuildPositions( true );
+		}
+	},
+	
+	setBrightTheme : function()
+	{
+		for( var i = 0; i < this.numAreas; ++i )
+		{
+			this.meshAreas[ i ].particleMat.color = new THREE.Color( 0x050505 );
+		}
+	},
+	
+	setDarkTheme : function()
+	{
+		for( var i = 0; i < this.numAreas; ++i )
+		{
+			this.meshAreas[ i ].particleMat.color = new THREE.Color( 0xD6D6D6 );
 		}
 	}
 };

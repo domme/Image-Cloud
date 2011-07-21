@@ -3,19 +3,6 @@
 	<head>
 		<title>Demo</title>
 		<meta charset="utf-8">
-		<style type="text/css">
-			body {
-				background:#fff;
-				padding:0;
-				margin:0;
-				font-weight: bold;
-				overflow:hidden;
-			}
-		</style>
-	</head>	
-		
-	<body>
-		<!-- <script src="js/Three.js"></script> -->
 		<script src="js/ThreeDebug.js"></script>
 		<script src="js/RequestAnimationFrame.js"></script>
 		<script src="js/Stats.js"></script>
@@ -24,16 +11,99 @@
 		<script src="js/MeshAreaManager.js"></script>
 
 		<script src="js/JQuery.js"></script>
+		<script src="js/JQueryUI.js"></script>
 		<script src="js/Animator.js"></script>
 		<script src ="js/CloudCamera.js"></script>
 		<script src="js/Postpro.js"></script>
 		<script src="js/app.js"></script>
-		<!-- <script type="text/javascript" src="http://benvanik.github.com/WebGL-Inspector/core/embed.js"></script> -->
-	
+		
+		<link type="text/css" href="css/vader/jquery-ui-1.8.14.custom.css" rel="Stylesheet" />	
+		<script type="text/javascript" src="js/JQuery.js"></script>
+		<script type="text/javascript" src="js/JQueryUI.js"></script>
+		
+		<style type="text/css">
+			body {
+				background:#fff;
+				padding:0;
+				margin:0;
+				font-weight: bold;
+				overflow:hidden;
+			}
+			
+			.webgl{
+				position: absolute;
+				top:0;
+				left:0;
+				z-index:1;
+			}
+			
+			.gui{
+				position: absolute;
+				top:0;
+				left:0;
+				z-index:2;
+			}
+		</style>
+	</head>	
+
+	<body>
+		<div id="webgl_div" class="webgl"/>
+		
+		<div id="gui" class="gui">
+		<form>
+			<div id="radio_dark_bright">
+				<input type="radio" id="radio1_dark" name="radio_dark_bright" value="dark"/><label for="radio1_dark">Dark Theme</label>
+				<input type="radio" id="radio2_bright" name="radio_dark_bright" value="bright" checked="checked"/><label for="radio2_bright">Bright Theme</label>
+			</div>
+		</form>
+		
+			<form>
+				<div id="radio_dof">
+					<input type="radio" id="radio1_dofOff" name="radio_dof" value="off" checked="checked"/><label for="radio1_dofOff">DOF off</label>
+					<input type="radio" id="radio2_dofOn" name="radio_dof" value="on" /><label for="radio2_dofOn">DOF on</label>
+				</div>
+			</form>
+		</div>
+		
 		<script type="text/javascript">
-				
-		var cloudApp = new ImageCloudApp();	
-				
+		
+		var cloudApp = new ImageCloudApp();
+		
+		$(function() {
+			$( "#radio_dark_bright" ).buttonset();
+			$( "#radio_dof" ).buttonset();
+		});
+			
+		$( "#radio_dark_bright" ).offset( { top:window.innerHeight - 50, left: window.innerWidth / 5 } );
+		$( "#radio_dof" ).offset( { top:window.innerHeight - 72, left: window.innerWidth / 1.5 } );
+		
+		$("input[name='radio_dark_bright']").change(function(){
+		    if ($("input[name='radio_dark_bright']:checked").val() == 'dark')
+			{
+				cloudApp.setDarkTheme();
+			}
+		    
+		    else 
+			{
+				cloudApp.setBrightTheme();
+			}
+		    
+		});
+		
+		$("input[name='radio_dof']").change(function(){
+		    if ($("input[name='radio_dof']:checked").val() == 'on')
+			{
+				cloudApp.enableDOF( true );
+			}
+		    
+		    else 
+			{
+				cloudApp.enableDOF( false );
+			}
+		    
+		});
+		
+	
 		</script>
 		
 	

@@ -18,11 +18,11 @@ ImageCloudApp = function()
 		this.boundMax = new THREE.Vector3();
 		this.bDof = false;
 	
-		this.container = document.createElement('div');
-		document.body.appendChild( this.container );
+		this.container = document.getElementById('webgl_div');
+		//document.body.appendChild( this.container );
 		
 		this.clearColor = 0xffffff;
-		this.renderer	= new THREE.WebGLRenderer( { stencil: true, antialias: false, clearColor: this.clearColor, clearAlpha : 1 } );
+		this.renderer	= new THREE.WebGLRenderer( { stencil: false, antialias: false, clearColor: this.clearColor, clearAlpha : 1 } );
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.renderer.autoClear = false;
 		
@@ -71,7 +71,7 @@ ImageCloudApp = function()
 						var newTex = tex.clone();
 						newTex.needsUpdate = true;
 						var mat = new THREE.MeshBasicMaterial( { color: 0xffffff, map : newTex } );
-						var newMesh = new THREE.Mesh( new THREE.Plane( 256, 256 ), mat );
+						var newMesh = new THREE.Mesh( new THREE.PlaneGeometry( 256, 256 ), mat );
 						newMesh.width = 256;
 						newMesh.height = 256;
 						app.imageMeshes.push( newMesh );
@@ -91,35 +91,10 @@ ImageCloudApp = function()
 						v3DimensionsMax : new THREE.Vector3( 2050.0, 2050.0, 9000.0 ),
 						animator : app.animator,
 						scene : app.scene,
-						loadingTexture : img	
+						loadingTexture : img,
+						clearColor : this.clearColor
 					} );
 		
-					particleImage = THREE.ImageUtils.loadTexture( "textures/particle1.png", new THREE.UVMapping() );
-					var particleMat = new THREE.MeshBasicMaterial( {color: app.clearColor == 0x000000 ? 0xD6D6D6 : 0x050505/*, map: particleImage */ } );
-					var geometry = new THREE.Geometry();
-		
-					for( var i = 0; i < 2000; ++i )
-					{
-						var tempParticleMesh = new THREE.Mesh( new THREE.Plane( 10, 10 ) );
-			
-						var max = 5000;
-						var min = -5000;
-						var endPos = new THREE.Vector3();
-			
-						endPos.x = min + ( max - min ) * Math.random();
-						endPos.y = min + ( max - min ) * Math.random();
-						endPos.z = -10000 * Math.random();
-			
-						tempParticleMesh.position.x = endPos.x;
-						tempParticleMesh.position.y = endPos.y;
-						tempParticleMesh.position.z = endPos.z;
-			
-						GeometryUtils.merge( geometry, tempParticleMesh );
-					}
-		
-					app.particleMesh = new THREE.Mesh(  geometry, particleMat );
-					app.scene.addObject( app.particleMesh );
-				
 					app.container.onmousemove = app.inputWrapper.onMouseMove;
 					app.container.onmousedown = app.inputWrapper.onMouseUp;
 					app.container.onmouseup = app.inputWrapper.onMouseUp;
@@ -328,6 +303,32 @@ ImageCloudApp = function()
 		}
 	}
 	
+	this.setBrightTheme = function()
+	{
+		this.clearColor = 0xffffff;
+		this.renderer.setClearColorHex( this.clearColor, 1 );
+		this.meshAreaManager.setBrightTheme();
+		this.scene.fog.color = new THREE.Color( this.clearColor );
+	}
+	
+	this.setDarkTheme = function()
+	{
+		this.clearColor = 0x000000;
+		this.renderer.setClearColorHex( this.clearColor, 1 );
+		this.meshAreaManager.setDarkTheme();
+		this.scene.fog.color = new THREE.Color( this.clearColor );
+	}
+	
+	this.enableDOF = function( enable )
+	{
+		if( !enable && this.bDof )
+		{
+			this.setRegularMats();
+		}
+		
+		this.bDof = enable;
+	}
+	
 	this.setDepthMats = function()
 	{
 		for( var i = 0; i < this.imageMeshes.length; ++i )
@@ -346,13 +347,11 @@ ImageCloudApp = function()
 		
 	this.render = function()
 	{
-		this.renderer.clear();
-		
 		if( !this.bDof )
-			this.renderer.render( this.scene, this.camera );
+			this.renderer.render( this.scene, this.camera, null, true );
 		
 		else
-		{
+		{		
 			// //Render scene in colorRT
 			this.setRegularMats();
 			this.renderer.render( this.scene, this.camera, this.colorRT, true );
@@ -362,12 +361,8 @@ ImageCloudApp = function()
 			this.renderer.render( this.scene, this.camera, this.depthRT, true );
 
 		//	Render Postpro effect
-			this.renderer.render( this.postpro.scene, this.postpro.camera );
 			this.postpro.applyGauss( this.renderer );
-
-			this.renderer.render( this.scene, this.camera );
 		}
-	
 	}
 };
 

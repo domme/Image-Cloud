@@ -4,6 +4,7 @@ Postpro = function ( colorRT, depthRT )
 	this.depthTexture = depthRT;
 	this.RT_1 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
 	this.RT_2 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
+	
 	this.scene = new THREE.Scene();
 	
 	this.camera = new THREE.Camera();
@@ -36,7 +37,7 @@ Postpro = function ( colorRT, depthRT )
 	} );
 	
 	this.effects[ "gauss" ] = matGauss;
-	this.quad = new THREE.Mesh( new THREE.Plane( 2, 2 ), this.effects[ "gauss" ] );
+	this.quad = new THREE.Mesh( new THREE.PlaneGeometry( 2, 2 ), this.effects[ "gauss" ] );
 	this.scene.addObject( this.quad );
 	
 	
@@ -85,7 +86,7 @@ Postpro = function ( colorRT, depthRT )
 		this.quad.materials = [ dofMat ];
 		
 		dofMat.uniforms[ "fFocusDepth" ].value = this.depthFocus.value;
-		renderer.render( this.scene, this.camera );
+		renderer.render( this.scene, this.camera, null, true );
 	};
 	
 	
