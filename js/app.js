@@ -124,10 +124,14 @@ ImageCloudApp = function()
 		
 		rayNear.x = this.mouseScenePos.x;
 		rayNear.y = this.mouseScenePos.y;
-		rayNear.z = 0;
-		rayNear.w = 1;
+		rayNear.z = this.mouseScenePos.z;
+		rayNear.w = 1.0;
 		
 		rayNear = viewProjI.multiplyVector4( rayNear );
+		rayNear.x /= rayNear.w;
+		rayNear.y /= rayNear.w;
+		rayNear.z /= rayNear.w;
+		rayNear.w = 1.0;
 				
 		var mouseRay = new THREE.Ray();		
 		mouseRay.origin.copy( this.camera.position );
@@ -403,9 +407,9 @@ AppInputWrapper = function( cloudApp )
 
 	this.onMouseMove = function( event )
 	{
-		app.mouseScenePos.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-		app.mouseScenePos.y = ( ( window.innerHeight - event.clientY ) / window.innerHeight ) * 2 - 1;
-		app.mouseScenePos.z = app.camera.near;
+		app.mouseScenePos.x = ( event.clientX / window.innerWidth ) * 2.0 - 1.0;
+		app.mouseScenePos.y = ( ( window.innerHeight - event.clientY ) / window.innerHeight ) * 2.0 - 1.0;
+		app.mouseScenePos.z = -1.0;
 		
 		app.handleMousePick();
 		
