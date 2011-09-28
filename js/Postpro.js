@@ -24,7 +24,7 @@ Postpro = function ( colorRT, depthRT )
 	gaussTexture.needsUpdate = true;
 	
 	blurUniforms[ "tImg" ].texture = this.colorTexture;
-	blurUniforms[ "tGauss" ].texture = gaussTexture;
+	blurUniforms[ "tGaussOffsets" ].texture = gaussTexture;
 	blurUniforms[ "tDepth" ].texture = this.depthTexture;
 	blurUniforms[ "v2ImageSize" ].value = new THREE.Vector2( this.colorTexture.width, this.colorTexture.height );
 	blurUniforms[ "v2SamplingDir" ].value = new THREE.Vector2( 1.0, 0.0 );
@@ -128,7 +128,8 @@ function createGaussTexture( kernelSize )
 	
 	var realKernelSize = kernelSize * 2 + 1;
 	var gaussValues = [];
-	var halfGaussValues = [];
+	var finalGaussValues = [];
+	var offsetValues = [];
 	var startValues = [ 0 ];
 	gaussValues = fibonacci( startValues, 0, realKernelSize - 1 );
 		
@@ -145,9 +146,23 @@ function createGaussTexture( kernelSize )
 		gaussValues[ i ] /= sum;
 	}
 	
-	for( var i = Math.floor( realKernelSize / 2.0 ); i < realKernelSize; ++i )
+	finalGaussValues.push( gaussValues[ Math.floor( realKernelSize / 2.0 ) ] ); //Weight of center texel
+	offsetValues.push( 0.0 ); //Offset of center texel
+	for( var k = 1, i = Math.floor( realKernelSize / 2.0 ) + 1; i < realKernelSize; k += 2, i += 2 )
 	{
-		halfGaussValues.push( gaussValues[ i ] );
+		if( i + 1 < realKernelSize )
+		{
+			var fCombinedGauss = gaussValues[ i ] + gaussValues[ i + 1 ];
+			finalGaussValues.push( fCombinedGauss );
+			offsetValues.push( ( gaussValues[ i ] * k + gaussValues[ i + 1 ] * k + 1 ) / fCombinedGauss );
+		}
+			
+		
+		else
+		{
+			finalGaussValues.push( gaussValues[ i ] );
+			offsetValues.push( k ); //Unsure about this...
+		}
 	}
 	
 	// var sigma = kernelSize + 1;
@@ -170,20 +185,30 @@ function createGaussTexture( kernelSize )
 
 	var canvas = document.createElement( 'canvas' );
 	canvas.width = width;
-	canvas.height = 1;
+	canvas.height = 2;
 	var context = canvas.getContext( '2d' );
 	var image = context.getImageData( 0, 0, width, i );
 
 
 	var x = 0, y = 0;
 
-	for ( var i = 0, j = 0, l = image.data.length; i < l; i += 4, j ++ ) 
+	for ( var i = 0, j = 0, l = image.data.length / 2; i < l; i += 4, j ++ ) 
 	{
-		image.data[ i ]		= halfGaussValues[ j ] * 255;
-		image.data[ i + 1 ] = halfGaussValues[ j ] * 255;
-		image.data[ i + 2 ] = halfGaussValues[ j ] * 255;
+		image.data[ i ]		= finalGaussValues[ j ] * 255;
+		image.data[ i + 1 ] = finalGaussValues[ j ] * 255;
+		image.data[ i + 2 ] = finalGaussValues[ j ] * 255;
 		image.data[ i + 3 ] = 255;
 	}
+	
+	for ( var i = image.data.length / 2, j = 0, l = image.data.length / 2; i < l; i += 4, j ++ ) 
+	{
+		image.data[ i ]		= offsetValues[ j ] * 255;
+		image.data[ i + 1 ] = offsetValues[ j ] * 255;
+		image.data[ i + 2 ] = offsetValues[ j ] * 255;
+		image.data[ i + 3 ] = 255;
+	}
+	
+	
 
 	context.putImageData( image, 0, 0 );
 	return canvas;

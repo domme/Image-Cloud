@@ -102,7 +102,7 @@ AdditionalShaders =
 				type: "t"
 				value: 0
 				texture: null
-			"tGauss" : 
+			"tGaussOffsets" : 
 				type: "t"
 				value: 1
 				texture: null
@@ -130,49 +130,52 @@ AdditionalShaders =
 		fragmentShader:              
 			"precision highp float;	 
 			uniform sampler2D tImg;  
-			uniform sampler2D tGauss;
+			uniform sampler2D tGaussOffsets;
 			uniform sampler2D tDepth;
 			uniform vec2 v2ImageSize;  
 			uniform vec2 v2SamplingDir;
 			                           
 			varying vec2 v2uv;         
-			                                                                                         
+			                                                 
 			float fGaussStep = 1.0 / ( KERNEL_SIZE + 1.0 );                                          
-			float fGaussStepHalf = fGaussStep / 2.0;                                                 
+			float fGaussCenterOffset = fGaussStep / 2.0;                                                 
+			
+			float offset( float x )
+			{
+				return texture2D( tGaussOffsets, vec2( x * fGaussStep + fGaussCenterOffset, fGaussStep + fGaussCenterOffset ) ).x;
+			}
 			                                                                                         
 			float gauss( float x )                                                                   
 			{                                                                                        
-			   x = abs( x );                                                                         
-			   return texture2D( tGauss, vec2( x * fGaussStep + fGaussStepHalf, fGaussStepHalf ) ).x;
-			}                                                                                        
+			   return texture2D( tGaussOffsets, vec2( x * fGaussStep + fGaussCenterOffset, fGaussCenterOffset ) ).x;
+			}
 			                                                                                         
 			vec4 blurGauss()                                                                         
 			{                                                                                        
 			   float step;                                                                           
-			   vec2 stepBackHalf;                                                                    
+			   vec2 centerOffset;                                                                    
 			                                                                                         
 			   if( v2SamplingDir.x > 0.0 )                                                           
 			   {                                                                                     
 			   		step = 1.0 / v2ImageSize.x;                                                      
-			   		stepBackHalf = vec2( 0.5, 0.0 ) * step;                                          
+			   		centerOffset = vec2( 0.5, 0.0 ) * step;                                          
 			   }                                                                                     
 			                                                                                         
 			   else                                                                                  
 			   {                                                                                     
 			   		step = 1.0 / v2ImageSize.y;                                                      
-			   		stepBackHalf = vec2( 0.0, 0.5 ) * step;                                          
+			   		centerOffset = vec2( 0.0, 0.5 ) * step;                                          
 			   }                                                                                     
-			                                                                                         
-			   float fthisWeight = 0.0;                                                                                                                      
-			                                                                                         
-			   vec4 v4Color = vec4( 0.0, 0.0, 0.0, 0.0 );                                            
-			   vec2 v2SamplingPos;                                                                   
-			                                                                                         
-			   for( float i = -KERNEL_SIZE; i <= KERNEL_SIZE; ++i )                                  
+			                                                    
+			   vec4 v4Color = texture2D( tImg, v2uv + centerOffset ) * gauss( 0.0 );                                            
+
+			   for( float i = 1.0; i <= KERNEL_SIZE; ++i )                                  
 			   {                                                                                     
-			   		v2SamplingPos = ( v2uv + stepBackHalf ) + v2SamplingDir * i * step;              
-					fthisWeight = gauss( i );                                                                                                             
-					v4Color += texture2D( tImg, v2SamplingPos ) * fthisWeight;				         
+			   		vec2 v2SamplingPos = ( v2uv + centerOffset ) + v2SamplingDir * offset( i ) * step;
+					v4Color += texture2D( tImg, v2SamplingPos ) * gauss( i );
+					
+					v2SamplingPos = ( v2uv + centerOffset ) - v2SamplingDir * offset( i ) * step;                                                                                                                           
+					v4Color += texture2D( tImg, v2SamplingPos ) * gauss( i );
 			   }                                                                                     
 			   	                                                                                     
 			   return v4Color;                                                            
