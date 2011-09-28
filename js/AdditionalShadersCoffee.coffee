@@ -163,8 +163,7 @@ AdditionalShaders =
 			   		stepBackHalf = vec2( 0.0, 0.5 ) * step;                                          
 			   }                                                                                     
 			                                                                                         
-			   float fthisWeight = 0.0;                                                              
-			   float fWeights = 0.0;                                                                 
+			   float fthisWeight = 0.0;                                                                                                                      
 			                                                                                         
 			   vec4 v4Color = vec4( 0.0, 0.0, 0.0, 0.0 );                                            
 			   vec2 v2SamplingPos;                                                                   
@@ -172,12 +171,11 @@ AdditionalShaders =
 			   for( float i = -KERNEL_SIZE; i <= KERNEL_SIZE; ++i )                                  
 			   {                                                                                     
 			   		v2SamplingPos = ( v2uv + stepBackHalf ) + v2SamplingDir * i * step;              
-					fthisWeight = gauss( i );                                                        
-					fWeights += fthisWeight;                                                         
+					fthisWeight = gauss( i );                                                                                                             
 					v4Color += texture2D( tImg, v2SamplingPos ) * fthisWeight;				         
 			   }                                                                                     
 			   	                                                                                     
-			   return v4Color / fWeights;                                                            
+			   return v4Color;                                                            
 			}
 			
 			highp float unpackFloatRGB( vec3 vValue )                            

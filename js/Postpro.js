@@ -105,42 +105,83 @@ Postpro = function ( colorRT, depthRT )
 
 Postpro.prototype.constructor = Postpro;
 
-
+function fibonacci( values, iCurrIndex, iEndIndex )
+{
+ 	var newValues = [];
+	newValues.push( 1 );
+	for( var iValue = 0; iValue < iCurrIndex; ++iValue )
+	{
+		newValues.push( values[ iValue ] + values[ iValue + 1 ] );
+	}
+	newValues.push( 1 );
+	
+	++iCurrIndex;
+	
+	if( iCurrIndex == iEndIndex )
+		return newValues;
+		
+	return fibonacci( newValues, iCurrIndex, iEndIndex );
+}
 
 function createGaussTexture( kernelSize )
 {
-	var gaussValues = [ ];
 	
-	var sigma = kernelSize + 1;
-	var e = 2.718281828;
-	var gaussSum = 0.0;
-	for( var i = 0; i <= kernelSize; ++i )
+	var realKernelSize = kernelSize * 2 + 1;
+	var gaussValues = [];
+	var halfGaussValues = [];
+	var startValues = [ 0 ];
+	gaussValues = fibonacci( startValues, 0, realKernelSize - 1 );
+		
+	var sum = 0;
+	var width = Math.round( realKernelSize / 2.0 );
+	
+	for( var i = 0; i < realKernelSize; ++i )
 	{
-		var x = Math.abs( i );
-		var gauss = ( 1.0 / Math.sqrt( 2.0 * Math.PI * sigma * sigma ) ) * Math.pow( e, ( ( -x * x ) / ( 2.0 * sigma * sigma ) ) );
-		gaussSum += gauss;
-		gaussValues.push( gauss );
+		sum += gaussValues[ i ];
 	}
-
-	for( var i = 0; i < gaussValues.length; ++i )
+	
+	for( var i = 0; i < realKernelSize; ++i )
 	{
-		gaussValues[ i ] /= gaussSum;
+		gaussValues[ i ] /= sum;
 	}
+	
+	for( var i = Math.floor( realKernelSize / 2.0 ); i < realKernelSize; ++i )
+	{
+		halfGaussValues.push( gaussValues[ i ] );
+	}
+	
+	// var sigma = kernelSize + 1;
+	// var e = 2.718281828;
+	// var gaussSum = 0.0;
+	// for( var i = 0; i <= kernelSize; ++i )
+	// {
+	// 	var x = Math.abs( i );
+	// 	var gauss = ( 1.0 / Math.sqrt( 2.0 * Math.PI * sigma * sigma ) ) * Math.pow( e, ( ( -x * x ) / ( 2.0 * sigma * sigma ) ) );
+	// 	gaussSum += gauss;
+	// 	gaussValues.push( gauss );
+	// }
+	// 
+	// for( var i = 0; i < gaussValues.length; ++i )
+	// {
+	// 	gaussValues[ i ] /= gaussSum;
+	// }
+	
+	
 
 	var canvas = document.createElement( 'canvas' );
-	canvas.width = sigma;
+	canvas.width = width;
 	canvas.height = 1;
 	var context = canvas.getContext( '2d' );
-	var image = context.getImageData( 0, 0, sigma, i );
+	var image = context.getImageData( 0, 0, width, i );
 
 
 	var x = 0, y = 0;
 
 	for ( var i = 0, j = 0, l = image.data.length; i < l; i += 4, j ++ ) 
 	{
-		image.data[ i ]		= gaussValues[ j ] * 255;
-		image.data[ i + 1 ] = gaussValues[ j ] * 255;
-		image.data[ i + 2 ] = gaussValues[ j ] * 255;
+		image.data[ i ]		= halfGaussValues[ j ] * 255;
+		image.data[ i + 1 ] = halfGaussValues[ j ] * 255;
+		image.data[ i + 2 ] = halfGaussValues[ j ] * 255;
 		image.data[ i + 3 ] = 255;
 	}
 

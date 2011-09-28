@@ -45,7 +45,7 @@ ImageCloudApp = function()
 		this.scene= new THREE.Scene( );
 		this.scene.fog = new THREE.FogExp2( this.clearColor, 0.0003 );
 	
-		this.colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: true, stencilBuffer: false } );
+		this.colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, depthBuffer: true, stencilBuffer: false } );
 		this.depthRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: true, stencilBuffer: false } );
 		this.postpro = new Postpro( this.colorRT, this.depthRT );
 		
