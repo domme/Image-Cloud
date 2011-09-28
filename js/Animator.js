@@ -42,6 +42,7 @@ function Animator()
 	this.lastTime = new Date().getTime();
 	this.bInit = false;
 	this.currAnimID = 0;
+	this.bAcceptFocus = true;
 	
 	this.animations = [];
 	
@@ -50,6 +51,7 @@ function Animator()
 		var anim = {};
 		
 		anim.interpolationType 	= animationInfo.interpolation	!= undefined ? animationInfo.interoplation : "linear";
+		anim.animator = this;
 		
 		if( animationInfo.customInterpolator )
 			anim.interpolate = animationInfo.customInterpolator;
@@ -99,7 +101,7 @@ function Animator()
 			anim.endValue = animationInfo.endValue;
 		}
 		
-		anim.callback = animationInfo.callback;
+		anim.onFinish = animationInfo.onFinish;
 		
 		anim.animValue 		= animationInfo.animValue;
 		anim.duration 		= animationInfo.duration		!= undefined ? animationInfo.duration : 1000;
@@ -159,7 +161,8 @@ function Animator()
 			{
 				if( anim.repetition == "oneShot" )
 				{
-					if( anim.callback ) anim.callback();
+					if( anim.onFinish ) 
+						anim.onFinish();
 					trash.push( anim );
 					continue;
 				}
@@ -181,8 +184,8 @@ function Animator()
 					t = 2 - t;
 					if( t < 0 )
 					{
-						if( anim.callback )
-							anim.callback();
+						if( anim.onFinish ) 
+							anim.onFinish();
 						trash.push( anim );
 						continue;
 					}

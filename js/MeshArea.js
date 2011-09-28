@@ -33,7 +33,7 @@ MeshArea = function( params )
 		tempParticleMesh.position.y = endPos.y;
 		tempParticleMesh.position.z = endPos.z;
 
-		GeometryUtils.merge( geometry, tempParticleMesh );
+		THREE.GeometryUtils.merge( geometry, tempParticleMesh );
 	}
 
 	this.particleMesh = new THREE.Mesh(  geometry, this.particleMat );

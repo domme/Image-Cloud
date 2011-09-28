@@ -120,6 +120,7 @@ THREE.CloudCamera = function ( parameters )
 	this.bInit = false;
 	this.useTarget = false;
 	this.callbackWrapper = new CallbackWrapper( this );
+	this.currViewModeDistance = 0.0;
 	
 	this.dragStarted = false;
 	
@@ -178,7 +179,7 @@ THREE.CloudCamera = function ( parameters )
 		
 		if( this.heading.isZero() && this.bAutoMove && !this.bImageViewMode )
 		{
-			//this.position.z -= this.zAutoMoveSpeed * t;
+			this.position.z -= this.zAutoMoveSpeed * t;
 		}
 		
 		else if( this.heading.isZero() && !this.bAutoMove && !this.bImageViewMode )

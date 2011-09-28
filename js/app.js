@@ -45,8 +45,8 @@ ImageCloudApp = function()
 		this.scene= new THREE.Scene( );
 		this.scene.fog = new THREE.FogExp2( this.clearColor, 0.0003 );
 	
-		this.colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
-		this.depthRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
+		this.colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: true, stencilBuffer: false } );
+		this.depthRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: true, stencilBuffer: false } );
 		this.postpro = new Postpro( this.colorRT, this.depthRT );
 		
 		var depthShader = AdditionalShaders[ 'depthLinear' ];
@@ -404,6 +404,11 @@ AppInputWrapper = function( cloudApp )
 {
 	var app = cloudApp;
 	var wrapper = this;
+	
+	this.acceptFocus = function()
+	{
+		app.animator.bAcceptFocus = true;
+	};
 
 	this.onMouseMove = function( event )
 	{
@@ -413,18 +418,6 @@ AppInputWrapper = function( cloudApp )
 		
 		app.handleMousePick();
 		
-		if( app.lastPickedMesh != null && app.pickedMesh != app.lastPickedMesh )
-		{
-			app.lastPickedMesh.scale.x /= app.pickScaleIncrease;
-			app.lastPickedMesh.scale.y /= app.pickScaleIncrease;
-		}
-		
-		if( app.pickedMesh != null && app.pickedMesh != app.lastPickedMesh )
-		{
-			app.pickedMesh.scale.x *= app.pickScaleIncrease;
-			app.pickedMesh.scale.y *= app.pickScaleIncrease;
-		}
-		
 		
 		//calculate the current depth of the picked element
 		if( app.pickedMesh != null )
@@ -433,19 +426,36 @@ AppInputWrapper = function( cloudApp )
 			posVS.clone( app.pickedMesh.position );
 			var posVS4 = new THREE.Vector4( posVS.x, posVS.y, posVS.z, 1.0 );
 			
-			var view = app.camera.matrixWorldInverse;
-			posVS4 = view.multiplyVector4( posVS4 );
+			if( app.animator.bAcceptFocus )
+			{
+				app.animator.AddAnimation( { 
+			 		 		interpolationType: "linear", 
+			 		 		dataType: "float", 
+			 		 		startValue: app.postpro.depthFocus.value, 
+			 		 		endValue: Math.abs( app.pickedMesh.position.z - app.camera.position.z ) / app.camera.far, 
+			 		 		animValue: app.postpro.depthFocus,
+			 		 		duration: 500,
+			 		 		repetition: "oneShot",
+							onFinish: wrapper.acceptFocus
+						  } );
 			
-			//postpro.depthFocus = Math.abs( posVS4.z / camera.far );
-			app.animator.AddAnimation( { 
-		 		 		interpolationType: "smoothstep", 
-		 		 		dataType: "float", 
-		 		 		startValue: app.postpro.depthFocus.value, 
-		 		 		endValue: Math.abs( app.pickedMesh.position.z - app.camera.position.z ) / app.camera.far, 
-		 		 		animValue: app.postpro.depthFocus,
-		 		 		duration: 500,
-		 		 		repetition: "oneShot"
-		 		 	  } );
+				app.animator.bAcceptFocus = false;
+			}
+		}
+		
+		// if( app.pickedMesh != null && Math.abs( app.pickedMesh.position.z - app.camera.position.z ) < app.camera.currViewModeDistance + 400.0 )
+		// 		app.pickedMesh = null;
+		
+		if( app.pickedMesh != null && app.pickedMesh != app.lastPickedMesh )
+		{
+			app.pickedMesh.scale.x *= app.pickScaleIncrease;
+			app.pickedMesh.scale.y *= app.pickScaleIncrease;
+		}
+		
+		if( app.lastPickedMesh != null && app.pickedMesh != app.lastPickedMesh )
+		{
+			app.lastPickedMesh.scale.x /= app.pickScaleIncrease;
+			app.lastPickedMesh.scale.y /= app.pickScaleIncrease;
 		}
 		
 		app.lastPickedMesh = app.pickedMesh;
@@ -468,18 +478,19 @@ AppInputWrapper = function( cloudApp )
 		{
 			var endPos = new THREE.Vector3();
 			endPos.copy( app.pickedMesh.position );
-			var zVert = app.pickedMesh.height / 2 * Math.tan( app.camera.fov / 2 );
-			var zHor = app.pickedMesh.width / 2 * Math.tan( app.camera.fovHorizontal / 2 );
+			var zVert = ( app.pickedMesh.height * app.pickedMesh.scale.y ) / 2 * Math.tan( app.camera.fov / 2 );
+			var zHor = ( app.pickedMesh.width * app.pickedMesh.scale.x ) / 2 * Math.tan( app.camera.fovHorizontal / 2 );
 			
 			endPos.z -= Math.max( zVert / 3, zHor / 3 );
+			app.camera.currViewModeDistance = Math.max( zVert / 3, zHor / 3 );
 			app.camera.bImageViewMode = true;
 			
 			app.animator.AddAnimation( { 
 				interpolationType: "weighted average",
 				dataType: "Vector3", 
-				startValue: camera.position, 
+				startValue: app.camera.position, 
 				endValue: endPos, 
-				animValue: camera.position,
+				animValue: app.camera.position,
 				duration: 1000,
 				repetition: "oneShot"
 			  } );

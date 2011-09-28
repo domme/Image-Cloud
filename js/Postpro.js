@@ -2,8 +2,9 @@ Postpro = function ( colorRT, depthRT )
 {
 	this.colorTexture = colorRT;
 	this.depthTexture = depthRT;
-	this.RT_1 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
-	this.RT_2 = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
+	var blurRT_downsize = 2.0;
+	this.RT_1 = new THREE.WebGLRenderTarget( window.innerWidth / blurRT_downsize, window.innerHeight / blurRT_downsize, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
+	this.RT_2 = new THREE.WebGLRenderTarget( window.innerWidth / blurRT_downsize, window.innerHeight / blurRT_downsize, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, depthBuffer: false, stencilBuffer: false } );
 	
 	this.scene = new THREE.Scene();
 	
@@ -18,7 +19,7 @@ Postpro = function ( colorRT, depthRT )
 	//////////////////// Create Blur Material //////////////////////////////
 	var blurShader = AdditionalShaders[ "gauss" ];
 	var blurUniforms = THREE.UniformsUtils.clone( blurShader.uniforms );
-	var gaussKernelSize = 5;
+	var gaussKernelSize = 4;
 	var gaussTexture = new THREE.Texture( createGaussTexture( gaussKernelSize ), new THREE.UVMapping(), THREE.RepeatWrapping, THREE.RepeatWrapping, THREE.NearestFilter, THREE.NearestFilter );
 	gaussTexture.needsUpdate = true;
 	
@@ -67,6 +68,8 @@ Postpro = function ( colorRT, depthRT )
 		var gaussMat = this.effects[ "gauss" ];
 		this.quad.materials = [ gaussMat ];
 		
+		renderer.setViewport( 0.0, 0.0, this.RT_1.width, this.RT_1.height );
+		
 		//Horizontal blur to RT_1
 		gaussMat.uniforms[ "v2SamplingDir" ].value = new THREE.Vector2( 1.0, 0.0 );
 		gaussMat.uniforms[ "tImg" ].texture = this.colorTexture;
@@ -79,9 +82,13 @@ Postpro = function ( colorRT, depthRT )
 		 	
 		renderer.render( this.scene, this.camera, this.RT_2, true );
 		
+
+		
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// STEP 2: Interpolate Between blurred Screen and sharp screen depending on focus depth onto screen ///
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		renderer.setViewport( 0.0, 0.0, window.innerWidth, window.innerHeight );
+
 		var dofMat = this.effects[ "dof" ];
 		this.quad.materials = [ dofMat ];
 		
