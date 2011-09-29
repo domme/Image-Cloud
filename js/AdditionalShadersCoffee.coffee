@@ -59,6 +59,7 @@ AdditionalShaders =
 				type: "f"
 				value: 0.5
 	
+	
 		vertexShader:
 		  "precision highp float;
 		  varying vec2 v2uv;
@@ -137,17 +138,19 @@ AdditionalShaders =
 			                           
 			varying vec2 v2uv;         
 			                                                 
-			float fGaussStep = 1.0 / ( KERNEL_SIZE + 1.0 );                                          
-			float fGaussCenterOffset = fGaussStep / 2.0;                                                 
+			float fGaussStepX = 1.0 / ( KERNEL_SIZE );
+			float fGaussStepY = 1.0 / 2.0;
+			float fGaussCenterOffsetX = fGaussStepX / 2.0;
+			float fGaussCenterOffsetY = fGaussStepY / 2.0;
 			
 			float offset( float x )
 			{
-				return texture2D( tGaussOffsets, vec2( x * fGaussStep + fGaussCenterOffset, fGaussStep + fGaussCenterOffset ) ).x;
+				return texture2D( tGaussOffsets, vec2( x * fGaussStepX + fGaussCenterOffsetX, fGaussCenterOffsetY ) ).x;
 			}
 			                                                                                         
 			float gauss( float x )                                                                   
 			{                                                                                        
-			   return texture2D( tGaussOffsets, vec2( x * fGaussStep + fGaussCenterOffset, fGaussCenterOffset ) ).x;
+			   return texture2D( tGaussOffsets, vec2( x * fGaussStepX + fGaussCenterOffsetX, fGaussStepY + fGaussCenterOffsetY ) ).x;
 			}
 			                                                                                         
 			vec4 blurGauss()                                                                         
@@ -167,18 +170,26 @@ AdditionalShaders =
 			   		centerOffset = vec2( 0.0, 0.5 ) * step;                                          
 			   }                                                                                     
 			                                                    
-			   vec4 v4Color = texture2D( tImg, v2uv + centerOffset ) * gauss( 0.0 );                                            
-
-			   for( float i = 1.0; i <= KERNEL_SIZE; ++i )                                  
-			   {                                                                                     
-			   		vec2 v2SamplingPos = ( v2uv + centerOffset ) + v2SamplingDir * offset( i ) * step;
-					v4Color += texture2D( tImg, v2SamplingPos ) * gauss( i );
+			   
+			   float fWeights = gauss( 0.0 );
+			   vec4 v4Color = texture2D( tImg, v2uv + centerOffset ) * fWeights;
+			   
+			   float k = 1.0;
+			   
+			   for( float i = 1.0; i < KERNEL_SIZE; ++i )                                  
+			   {        
+					float fWeight = gauss( i );
+					fWeights += 2.0 * fWeight;
+			   		vec2 v2SamplingPos = ( v2uv + centerOffset ) + v2SamplingDir * ( k + offset( i ) ) * step;
+					v4Color += texture2D( tImg, v2SamplingPos ) * fWeight;
 					
-					v2SamplingPos = ( v2uv + centerOffset ) - v2SamplingDir * offset( i ) * step;                                                                                                                           
-					v4Color += texture2D( tImg, v2SamplingPos ) * gauss( i );
+					v2SamplingPos = ( v2uv + centerOffset ) - v2SamplingDir * ( k + offset( i ) ) * step;                                                                                                                           
+					v4Color += texture2D( tImg, v2SamplingPos ) * fWeight;
+					
+					k += 2.0;
 			   }                                                                                     
 			   	                                                                                     
-			   return v4Color;                                                            
+			   return v4Color / fWeights;                                                            
 			}
 			
 			highp float unpackFloatRGB( vec3 vValue )                            

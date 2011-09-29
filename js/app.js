@@ -35,7 +35,7 @@ ImageCloudApp = function()
 	
 		this.animator = new Animator();
 		
-		this.camera = new THREE.CloudCamera( { fov:60, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: this.renderer.domElement } );
+		this.camera = new THREE.CloudCamera( { fov:90, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: this.renderer.domElement } );
 		this.camera.position.z = 1000;
 		this.camera.position.y = 10;
 		this.camera.farHeight = 2 * ( Math.tan( this.camera.fov / 2 ) * this.camera.far );
@@ -481,8 +481,8 @@ AppInputWrapper = function( cloudApp )
 			var zVert = ( app.pickedMesh.height * app.pickedMesh.scale.y ) / 2 * Math.tan( app.camera.fov / 2 );
 			var zHor = ( app.pickedMesh.width * app.pickedMesh.scale.x ) / 2 * Math.tan( app.camera.fovHorizontal / 2 );
 			
-			endPos.z -= Math.max( zVert / 3, zHor / 3 );
-			app.camera.currViewModeDistance = Math.max( zVert / 3, zHor / 3 );
+			endPos.z += Math.max( zVert, zHor );
+			app.camera.currViewModeDistance = Math.max( zVert, zHor );
 			app.camera.bImageViewMode = true;
 			
 			app.animator.AddAnimation( { 
