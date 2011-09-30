@@ -131,6 +131,7 @@ THREE.CloudCamera = function ( parameters )
 	this.dragPosStart = new THREE.Vector2();
 	this.maxAngleRad = 60.0 / 180.0 * Math.PI;
 	
+	this.bAllowAutoMove = false;
 	this.bAutoMove = false;
 	this.currAutoMovementTime = 0.0;
 	this.startAutoMovementTime = 2.0;
@@ -177,7 +178,7 @@ THREE.CloudCamera = function ( parameters )
 				this.newOrientation.copy( this.baseOrientation );
 		}
 		
-		if( this.heading.isZero() && this.bAutoMove && !this.bImageViewMode )
+		if( this.heading.isZero() && this.bAutoMove && !this.bImageViewMode &&this.bAllowAutoMove )
 		{
 			this.position.z -= this.zAutoMoveSpeed * t;
 		}

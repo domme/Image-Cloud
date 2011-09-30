@@ -3,14 +3,16 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>js/CloudCamera.js</string>
+	<string>ImageCloud.html</string>
 	<key>documents</key>
 	<array>
 		<dict>
 			<key>filename</key>
 			<string>ImageCloud.html</string>
 			<key>lastUsed</key>
-			<date>2011-09-28T19:27:33Z</date>
+			<date>2011-09-29T14:02:05Z</date>
+			<key>selected</key>
+			<true/>
 		</dict>
 		<dict>
 			<key>children</key>
@@ -19,7 +21,7 @@
 					<key>filename</key>
 					<string>js/app.js</string>
 					<key>lastUsed</key>
-					<date>2011-09-28T19:43:34Z</date>
+					<date>2011-09-29T12:33:43Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -37,21 +39,19 @@
 					<key>filename</key>
 					<string>js/MeshArea.js</string>
 					<key>lastUsed</key>
-					<date>2011-09-28T08:23:30Z</date>
+					<date>2011-09-29T11:55:41Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/MeshAreaManager.js</string>
 					<key>lastUsed</key>
-					<date>2011-07-21T17:37:19Z</date>
+					<date>2011-09-29T11:55:43Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/CloudCamera.js</string>
 					<key>lastUsed</key>
-					<date>2011-09-28T19:43:34Z</date>
-					<key>selected</key>
-					<true/>
+					<date>2011-09-29T12:35:22Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -483,14 +483,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>28</integer>
+				<integer>2</integer>
 				<key>line</key>
-				<integer>51</integer>
+				<integer>85</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>63</integer>
+			<integer>0</integer>
 		</dict>
 		<key>js/AdditionalShadersCoffee.coffee</key>
 		<dict>
@@ -525,14 +525,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>4</integer>
+				<integer>91</integer>
 				<key>line</key>
-				<integer>33</integer>
+				<integer>180</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>11</integer>
+			<integer>151</integer>
 		</dict>
 		<key>js/MeshArea.js</key>
 		<dict>
@@ -581,14 +581,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>149</integer>
+				<integer>58</integer>
 				<key>line</key>
-				<integer>48</integer>
+				<integer>311</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>299</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
@@ -607,6 +607,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{0, 44}, {1002, 734}}</string>
+	<string>{{7, 43}, {649, 734}}</string>
 </dict>
 </plist>

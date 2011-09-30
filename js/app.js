@@ -307,6 +307,11 @@ ImageCloudApp = function()
 		}
 	}
 	
+	this.toggleAutoMove = function()
+	{
+		this.camera.bAllowAutoMove = !this.camera.bAllowAutoMove;
+	}
+	
 	this.setBrightTheme = function()
 	{
 		this.clearColor = 0xffffff;
@@ -464,12 +469,12 @@ AppInputWrapper = function( cloudApp )
 	
 	this.onKeyUp = function( event ) 
 	{
-		switch( event.keyCode ) 
+		/*switch( event.keyCode ) 
 		{
-			case 82: /*R*/ 
+			case 82: 
 				app.togglePerspective();
 			break;
-		}
+		} */
 	}
 	
 	this.onDoubleClick = function( event )

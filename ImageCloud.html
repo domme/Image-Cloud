@@ -63,6 +63,11 @@
 					<input type="radio" id="radio2_dofOn" name="radio_dof" value="on" /><label for="radio2_dofOn">DOF on</label>
 				</div>
 			</form>
+			
+			<form>
+				<div id="check_autoMove">
+					<input type="checkbox" id="checkOff" name="check_autoMove" value="off"/><label for="checkOff">Auto-move</label>
+				</div>
 		</div>
 		
 		<script type="text/javascript">
@@ -72,10 +77,17 @@
 		$(function() {
 			$( "#radio_dark_bright" ).buttonset();
 			$( "#radio_dof" ).buttonset();
+			$( "#check_autoMove" ).buttonset();
 		});
 			
-		$( "#radio_dark_bright" ).offset( { top:window.innerHeight - 50, left: window.innerWidth / 5 } );
-		$( "#radio_dof" ).offset( { top:window.innerHeight - 72, left: window.innerWidth / 1.5 } );
+		$( "#radio_dark_bright" ).offset( { top:window.innerHeight - 50, left: 0 } );
+		$( "#radio_dof" ).offset( { top:window.innerHeight - 72, left: window.innerWidth - 200 } );
+		$( "#check_autoMove" ).offset( { top:window.innerHeight - 100, left: window.innerWidth / 2 } );
+		
+		$("input[name='check_autoMove']").change(function(){
+		    cloudApp.toggleAutoMove();
+		    
+		});
 		
 		$("input[name='radio_dark_bright']").change(function(){
 		    if ($("input[name='radio_dark_bright']:checked").val() == 'dark')
