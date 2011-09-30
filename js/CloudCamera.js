@@ -11,6 +11,8 @@ CallbackWrapper = function( cloudCamera )
 	{
 		if( camera.dragStarted )
 		{
+			camera.useTarget = false;
+			camera.useQuaternion = true;
 			camera.bImageViewMode = false;
 			var dragSpeedX = event.clientX - camera.dragPosStart.x;
 			var dragSpeedY = event.clientY - camera.dragPosStart.y;
@@ -85,6 +87,8 @@ CallbackWrapper = function( cloudCamera )
 
 	this.onMouseWheel = function( event )
 	{
+		camera.useTarget = false;
+		camera.useQuaternion = true;
 		camera.bAutoMove = false;
 		camera.bAutoMovmentTime = 0.0;
 		camera.bImageViewMode = false;
@@ -116,7 +120,6 @@ THREE.CloudCamera = function ( parameters )
 	
 	this.tLast = new Date().getTime();
 	
-	
 	this.bInit = false;
 	this.useTarget = false;
 	this.callbackWrapper = new CallbackWrapper( this );
@@ -137,6 +140,9 @@ THREE.CloudCamera = function ( parameters )
 	this.startAutoMovementTime = 2.0;
 	this.bImageViewMode = false;
 	this.zAutoMoveSpeed = 100;
+	
+	this.moveBBoxMin = new THREE.Vector3();
+	this.moveBBoxMax = new THREE.Vector3();
 	
 	this.update = function()
 	{
@@ -230,19 +236,55 @@ THREE.CloudCamera = function ( parameters )
 	this.checkHeading = function()
 	{
 		if( this.heading.x > 0 )
+		{
 			this.heading.x = Math.min( this.maxHeading, this.heading.x );
+			
+			if( this.position.x > this.moveBBoxMax.x )
+				this.heading.x = 0;
+		}
+			
 		else
+		{
 			this.heading.x = Math.max( -this.maxHeading, this.heading.x );
 			
+			if( this.position.x < this.moveBBoxMin.x )
+				this.heading.x = 0;
+		}
+			
+			
 		if( this.heading.y > 0 )
+		{
 			this.heading.y = Math.min( this.maxHeading, this.heading.y );
+			
+			if( this.position.y > this.moveBBoxMax.y )
+				this.heading.y = 0;
+		}
+			
 		else
+		{
 			this.heading.y = Math.max( -this.maxHeading, this.heading.y );
 			
+			if( this.position.y < this.moveBBoxMin.y )
+				this.heading.y = 0;
+		}
+			
+			
 		if( this.heading.z > 0 )
+		{
 			this.heading.z = Math.min( this.maxHeading, this.heading.z );
+			
+			/*if( this.position.z > this.moveBBoxMax.z )
+				this.heading.z = 0; */
+		}
+			
 		else
+		{
 			this.heading.z = Math.max( -this.maxHeading, this.heading.z );
+			
+			/*if( this.position.z < this.moveBBoxMin.z )
+				this.heading.z = 0; */
+		}
+			
 			
 		if( Math.abs( this.heading.x ) < 0.01 )
 			this.heading.x = 0;

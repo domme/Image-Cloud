@@ -22,7 +22,17 @@ function linear( t )
 
 function smoothstep( t )
 {
-	return ( t * t * ( 3 - 2 * t ) );
+	return  ( t * t * ( 3 - 2 * t ) );
+};
+
+function smoothstep2( t )
+{
+	return smoothstep( smoothstep( t ) );
+};
+
+function smoothstep3( t )
+{
+	return smoothstep( smoothstep( smoothstep( t ) ) );
 };
 
 function sine( t )
@@ -61,6 +71,12 @@ function Animator()
 			
 		else if( animationInfo.interpolationType === "smoothstep" )
 			anim.interpolate = smoothstep;
+			
+		else if( animationInfo.interpolationType === "smoothstep2" )
+			anim.interpolate = smoothstep2;
+			
+		else if( animationInfo.interpolationType === "smoothstep3" )
+			anim.interpolate = smoothstep3;
 			
 		else if( animationInfo.interpolationType === "sine" )
 			anim.interpolate = sine;
@@ -157,7 +173,7 @@ function Animator()
 			anim.currT += t_delta;
 			var t = anim.currT / anim.duration;
 			
-			if( t > 1 )
+			if( t > 1.0 )
 			{
 				if( anim.repetition == "oneShot" )
 				{
@@ -181,7 +197,7 @@ function Animator()
 				
 				else if( anim.repetition == "fourthAndBack" )
 				{
-					t = 2 - t;
+					t = 1.99 - t;
 					if( t < 0 )
 					{
 						if( anim.onFinish ) 
@@ -243,7 +259,7 @@ function Animator()
             
 		    else if( anim.dataType == "Quaternion" )
 		    {
-				anim.animValue.copy( anim.endValue );
+				//anim.animValue.copy( anim.endValue );
 		    }	
 		
 			else if( anim.dataType == "float" )

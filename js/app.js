@@ -79,7 +79,12 @@ ImageCloudApp = function()
 					}
 		
 					var loadingTexture = app.imageMeshes[ 0 ].materials[ 0 ];
-	
+					
+					var v3ImageAreaMin = new THREE.Vector3( -1000.0, -800.0, 0.0 );
+					var v3ImageAreaMax = new THREE.Vector3( 1000.0, 800.0, 7000.0 );
+					
+					app.camera.moveBBoxMax = v3ImageAreaMax;
+					app.camera.moveBBoxMin = v3ImageAreaMin;
 			
 					app.meshAreaManager = new MeshAreaManager( {
 						numMeshesMax : app.numImages,
@@ -87,8 +92,8 @@ ImageCloudApp = function()
 						camera : app.camera,
 						meshes : app.imageMeshes,
 						meshMaterials : app.imageMats,
-						v3DimensionsMin : new THREE.Vector3( -2050.0, -2050.0, 0.0 ),
-						v3DimensionsMax : new THREE.Vector3( 2050.0, 2050.0, 9000.0 ),
+						v3DimensionsMin : v3ImageAreaMin,
+						v3DimensionsMax : v3ImageAreaMax,
 						animator : app.animator,
 						scene : app.scene,
 						loadingTexture : img,
@@ -301,7 +306,7 @@ ImageCloudApp = function()
 				startValue: mesh.position, 
 				endValue: mesh.tempPos,
 				animValue: mesh.position,
-				duration: 2000,
+				duration: 3000,
 				repetition: "oneShot"
 			  } );
 		}
@@ -486,17 +491,41 @@ AppInputWrapper = function( cloudApp )
 			var zVert = ( app.pickedMesh.height * app.pickedMesh.scale.y ) / 2 * Math.tan( app.camera.fov / 2 );
 			var zHor = ( app.pickedMesh.width * app.pickedMesh.scale.x ) / 2 * Math.tan( app.camera.fovHorizontal / 2 );
 			
-			endPos.z += Math.max( zVert, zHor );
-			app.camera.currViewModeDistance = Math.max( zVert, zHor );
+			endPos.z += Math.max( zVert / 2.5, zHor / 2.5 );
+			app.camera.currViewModeDistance = Math.max( zVert / 2.5, zHor / 2.5 );
 			app.camera.bImageViewMode = true;
 			
+		
+			var v3Forward = new THREE.Vector3( 0, 0, -1 );
+			var v3Aim = new THREE.Vector3( app.pickedMesh.position.x - app.camera.position.x, app.pickedMesh.position.y - app.camera.position.y, app.pickedMesh.position.z - app.camera.position.z );
+			v3Aim.normalize();
+			
+			var v3Axis = new THREE.Vector3();
+			v3Axis.cross( v3Forward, v3Aim );
+			v3Axis.normalize();
+			
+			var fAngle = v3Aim.dot( v3Forward ) / 2.5;
+			
+			var endRot = new THREE.Quaternion();
+			endRot.setFromAxisAngle( v3Axis, fAngle );
+			
 			app.animator.AddAnimation( { 
-				interpolationType: "weighted average",
+				interpolationType: "smoothstep2",
+				dataType: "Quaternion",
+				startValue: app.camera.quaternion,
+				endValue: endRot,
+				animValue: app.camera.quaternion,
+				duration: 1500,
+				repetition: "fourthAndBack"
+				 } );
+			
+			app.animator.AddAnimation( { 
+				interpolationType: "smoothstep2",
 				dataType: "Vector3", 
 				startValue: app.camera.position, 
 				endValue: endPos, 
 				animValue: app.camera.position,
-				duration: 1000,
+				duration: 3000,
 				repetition: "oneShot"
 			  } );
 		}
