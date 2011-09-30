@@ -6,6 +6,7 @@ MeshArea = function( params )
 	this.v3Max = params.v3Max !== undefined ? params.v3Max : new THREE.Vector3( 1.0, 1.0, 1.0 );
 	this.iStart = params.iStart !== undefined ? params.iStart : 0;
 	this.iEnd = params.iEnd !== undefined ? params.iEnd : this.count - 1;
+	this.bUseParticels = params.useParticles !== undefined ? params.useParticles : false;
 	this.meshes = params.meshes;
 	this.meshMaterials = params.meshMaterials;
 	this.animator = params.animator;
@@ -16,28 +17,30 @@ MeshArea = function( params )
 	this.debugMesh;
 	this.particleMesh;
 
-	
-	this.particleMat = new THREE.MeshBasicMaterial( {color: this.clearColor == 0x000000 ? 0xD6D6D6 : 0x050505/*, map: particleImage */ } );
-	var geometry = new THREE.Geometry();
-
-	for( var i = 0; i < 20; ++i )
+	if( this.bUseParticles )
 	{
-		var tempParticleMesh = new THREE.Mesh( new THREE.PlaneGeometry( 10, 10 ) );
-		var endPos = new THREE.Vector3();
+		this.particleMat = new THREE.MeshBasicMaterial( {color: this.clearColor == 0x000000 ? 0xD6D6D6 : 0x050505/*, map: particleImage */ } );
+		var geometry = new THREE.Geometry();
 
-		endPos.x = this.v3Min.x + ( this.v3Max.x - this.v3Min.x ) * Math.random();
-		endPos.y = this.v3Min.y + ( this.v3Max.y - this.v3Min.y ) * Math.random();
-		endPos.z = this.v3Min.z + ( this.v3Max.z - this.v3Min.z ) * Math.random();
+		for( var i = 0; i < 20; ++i )
+		{
+			var tempParticleMesh = new THREE.Mesh( new THREE.PlaneGeometry( 10, 10 ) );
+			var endPos = new THREE.Vector3();
 
-		tempParticleMesh.position.x = endPos.x;
-		tempParticleMesh.position.y = endPos.y;
-		tempParticleMesh.position.z = endPos.z;
+			endPos.x = this.v3Min.x + ( this.v3Max.x - this.v3Min.x ) * Math.random();
+			endPos.y = this.v3Min.y + ( this.v3Max.y - this.v3Min.y ) * Math.random();
+			endPos.z = this.v3Min.z + ( this.v3Max.z - this.v3Min.z ) * Math.random();
 
-		THREE.GeometryUtils.merge( geometry, tempParticleMesh );
+			tempParticleMesh.position.x = endPos.x;
+			tempParticleMesh.position.y = endPos.y;
+			tempParticleMesh.position.z = endPos.z;
+
+			THREE.GeometryUtils.merge( geometry, tempParticleMesh );
+		}
+
+		this.particleMesh = new THREE.Mesh(  geometry, this.particleMat );
+		this.ThreeScene.addObject( this.particleMesh );
 	}
-
-	this.particleMesh = new THREE.Mesh(  geometry, this.particleMat );
-	this.ThreeScene.addObject( this.particleMesh );
 	
 	this.GetNewPhotos();
 };

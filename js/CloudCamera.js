@@ -17,13 +17,13 @@ CallbackWrapper = function( cloudCamera )
 			var dragSpeedX = event.clientX - camera.dragPosStart.x;
 			var dragSpeedY = event.clientY - camera.dragPosStart.y;
 			
-			camera.heading.x -= dragSpeedX * 20;
-			camera.heading.y += dragSpeedY * 20;		
+			camera.heading.x -= dragSpeedX * 5;
+			camera.heading.y += dragSpeedY * 5;		
 			
 			var orientX = new THREE.Quaternion();
 			var orientY = new THREE.Quaternion();
-			var angleX = dragSpeedX / 4000;
-			var angleY = dragSpeedY / 4000;
+			var angleX = dragSpeedX / 5000;
+			var angleY = dragSpeedY / 5000;
 			angleX = camera.checkAngle( angleX );
 			angleY = camera.checkAngle( angleY );
 			
@@ -111,7 +111,7 @@ THREE.CloudCamera = function ( parameters )
 	
 	this.heading =  new THREE.Vector3();
 	this.posChange = new THREE.Vector3();
-	this.maxHeading = 1000;
+	this.maxHeading = 600;
 	
 	this.newOrientation = new THREE.Quaternion();
 	this.orientation = new THREE.Quaternion();

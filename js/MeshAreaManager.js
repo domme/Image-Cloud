@@ -17,6 +17,7 @@ MeshAreaManager = function( params )
 	this.clearColor = params.clearColor;
 	this.urlFetchTimes = 1;
 	this.bInit = false;
+	this.bUseParticles = params.useParticles;
 	
 	
 	this.numAreas = Math.ceil( this.numMeshesMax / this.numMeshesPerArea );
@@ -91,7 +92,8 @@ MeshAreaManager.prototype =
 											animator : this.animator,
 											urls : this.urls,
 											clearColor: this.clearColor,
-											scene : this.ThreeScene
+											scene : this.ThreeScene,
+											useParticles : this.bUseParticles
 										  } ) );
 
 
@@ -255,7 +257,8 @@ MeshAreaManager.prototype =
 						if( this.bDebug )
 							firstArea.debugMesh.position = new THREE.Vector3( firstArea.debugMesh.position.x, firstArea.debugMesh.position.y, firstArea.debugMesh.position.z - this.areaPageTravelZ );
 						
-						firstArea.particleMesh.position.z -= this.areaPageTravelZ
+						if( this.bUseParticles )
+							firstArea.particleMesh.position.z -= this.areaPageTravelZ
 						
 						firstArea.pageNumber = lastArea.pageNumber + 1;
 						
@@ -283,7 +286,8 @@ MeshAreaManager.prototype =
 						if( this.bDebug )
 							lastArea.debugMesh.position =  new THREE.Vector3( lastArea.debugMesh.position.x, lastArea.debugMesh.position.y, lastArea.debugMesh.position.z + this.areaPageTravelZ );
 						
-						lastArea.particleMesh.position.z += this.areaPageTravelZ;
+						if( this.bUseParticles ) 
+							lastArea.particleMesh.position.z += this.areaPageTravelZ;
 						
 						lastArea.pageNumber = firstArea.pageNumber - 1;	
 						
@@ -322,17 +326,19 @@ MeshAreaManager.prototype =
 	
 	setBrightTheme : function()
 	{
-		for( var i = 0; i < this.numAreas; ++i )
-		{
-			this.meshAreas[ i ].particleMat.color = new THREE.Color( 0x050505 );
-		}
+		if( this.bUseParticles )
+			for( var i = 0; i < this.numAreas; ++i )
+			{
+				this.meshAreas[ i ].particleMat.color = new THREE.Color( 0x050505 );
+			}
 	},
 	
 	setDarkTheme : function()
 	{
-		for( var i = 0; i < this.numAreas; ++i )
-		{
-			this.meshAreas[ i ].particleMat.color = new THREE.Color( 0xD6D6D6 );
-		}
+		if( this.bUseParticles )
+			for( var i = 0; i < this.numAreas; ++i )
+			{
+				this.meshAreas[ i ].particleMat.color = new THREE.Color( 0xD6D6D6 );
+			}
 	}
 };

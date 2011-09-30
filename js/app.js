@@ -9,6 +9,8 @@ ImageCloudApp = function()
 		this.meshAreaManager = null;
 		this.pickedMesh = null;
 		this.lastPickedMesh = null;
+		this.clickedMesh = null;
+		this.lastClickedMesh = null;
 		this.pickScaleIncrease = 1.1;
 		this.mouseScenePos = new THREE.Vector3();
 		this.particleMesh = null;
@@ -36,8 +38,8 @@ ImageCloudApp = function()
 		this.animator = new Animator();
 		
 		this.camera = new THREE.CloudCamera( { fov:90, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: this.renderer.domElement } );
-		this.camera.position.z = 1000;
-		this.camera.position.y = 10;
+		this.camera.position.z = 0;
+		this.camera.position.y = 0;
 		this.camera.farHeight = 2 * ( Math.tan( this.camera.fov / 2 ) * this.camera.far );
 		this.camera.farWidth = this.camera.aspect * this.camera.farHeight;
 		this.camera.fovHorizontal = 2 *( Math.atan( ( this.camera.farWidth / 2 ) / this.camera.far ) );
@@ -80,8 +82,8 @@ ImageCloudApp = function()
 		
 					var loadingTexture = app.imageMeshes[ 0 ].materials[ 0 ];
 					
-					var v3ImageAreaMin = new THREE.Vector3( -1000.0, -800.0, 0.0 );
-					var v3ImageAreaMax = new THREE.Vector3( 1000.0, 800.0, 7000.0 );
+					var v3ImageAreaMin = new THREE.Vector3( -900.0, -700.0, 0.0 );
+					var v3ImageAreaMax = new THREE.Vector3( 900.0, 700.0, 6000.0 );
 					
 					app.camera.moveBBoxMax = v3ImageAreaMax;
 					app.camera.moveBBoxMin = v3ImageAreaMin;
@@ -97,15 +99,16 @@ ImageCloudApp = function()
 						animator : app.animator,
 						scene : app.scene,
 						loadingTexture : img,
-						clearColor : this.clearColor
+						clearColor : this.clearColor,
+						useParticles : false
 					} );
 		
 					app.container.onmousemove = app.inputWrapper.onMouseMove;
-					app.container.onmousedown = app.inputWrapper.onMouseUp;
+					app.container.onmousedown = app.inputWrapper.onMouseDown;
 					app.container.onmouseup = app.inputWrapper.onMouseUp;
-					app.container.onclick = app.inputWrapper.onMouseClick;
+				//app.container.onclick = app.inputWrapper.onMouseClick;
 		
-					app.container.ondblclick = app.inputWrapper.onDoubleClick;
+				//	app.container.ondblclick = app.inputWrapper.onDoubleClick;
 					document.body.onkeyup = app.inputWrapper.onKeyUp;
 		
 					app.rebuildPositions();
@@ -156,15 +159,15 @@ ImageCloudApp = function()
 		{
 			if( intersects[ 0 ].object !== null && intersects[ 0 ].object !== this.particleMesh )
 			{
-				this.pickedMesh = intersects[ 0 ].object;
+				return intersects[ 0 ].object;
 			}
 		}
 		
 		else
 		{
-			this.pickedMesh = null;
+			return null;
 		}
-	}		
+	}
 	
 	this.togglePerspective = function()
 	{
@@ -426,7 +429,7 @@ AppInputWrapper = function( cloudApp )
 		app.mouseScenePos.y = ( ( window.innerHeight - event.clientY ) / window.innerHeight ) * 2.0 - 1.0;
 		app.mouseScenePos.z = -1.0;
 		
-		app.handleMousePick();
+		app.pickedMesh = app.handleMousePick();
 		
 		
 		//calculate the current depth of the picked element
@@ -472,6 +475,16 @@ AppInputWrapper = function( cloudApp )
 		
 	}
 	
+	this.onMouseDown = function( event )
+	{
+		app.mouseScenePos.x = ( event.clientX / window.innerWidth ) * 2.0 - 1.0;
+		app.mouseScenePos.y = ( ( window.innerHeight - event.clientY ) / window.innerHeight ) * 2.0 - 1.0;
+		app.mouseScenePos.z = -1.0;
+
+		app.clickedMesh = app.handleMousePick();
+		app.lastClickedMesh = app.clickedMesh;
+	}
+	
 	this.onKeyUp = function( event ) 
 	{
 		/*switch( event.keyCode ) 
@@ -482,14 +495,20 @@ AppInputWrapper = function( cloudApp )
 		} */
 	}
 	
-	this.onDoubleClick = function( event )
+	this.onMouseUp = function( event )
 	{
-		if( app.pickedMesh != null )
+		app.mouseScenePos.x = ( event.clientX / window.innerWidth ) * 2.0 - 1.0;
+		app.mouseScenePos.y = ( ( window.innerHeight - event.clientY ) / window.innerHeight ) * 2.0 - 1.0;
+		app.mouseScenePos.z = -1.0;
+
+		app.clickedMesh = app.handleMousePick();
+		
+		if( app.clickedMesh != null && app.clickedMesh == app.lastClickedMesh )
 		{
 			var endPos = new THREE.Vector3();
-			endPos.copy( app.pickedMesh.position );
-			var zVert = ( app.pickedMesh.height * app.pickedMesh.scale.y ) / 2 * Math.tan( app.camera.fov / 2 );
-			var zHor = ( app.pickedMesh.width * app.pickedMesh.scale.x ) / 2 * Math.tan( app.camera.fovHorizontal / 2 );
+			endPos.copy( app.clickedMesh.position );
+			var zVert = ( app.clickedMesh.height * app.clickedMesh.scale.y ) / 2 * Math.tan( app.camera.fov / 2 );
+			var zHor = ( app.clickedMesh.width * app.clickedMesh.scale.x ) / 2 * Math.tan( app.camera.fovHorizontal / 2 );
 			
 			endPos.z += Math.max( zVert / 2.5, zHor / 2.5 );
 			app.camera.currViewModeDistance = Math.max( zVert / 2.5, zHor / 2.5 );
@@ -497,7 +516,7 @@ AppInputWrapper = function( cloudApp )
 			
 		
 			var v3Forward = new THREE.Vector3( 0, 0, -1 );
-			var v3Aim = new THREE.Vector3( app.pickedMesh.position.x - app.camera.position.x, app.pickedMesh.position.y - app.camera.position.y, app.pickedMesh.position.z - app.camera.position.z );
+			var v3Aim = new THREE.Vector3( app.clickedMesh.position.x - app.camera.position.x, app.clickedMesh.position.y - app.camera.position.y, app.clickedMesh.position.z - app.camera.position.z );
 			v3Aim.normalize();
 			
 			var v3Axis = new THREE.Vector3();
@@ -531,7 +550,7 @@ AppInputWrapper = function( cloudApp )
 		}
 	}
 	
-	this.onMouseClick = function( event )
+	/*this.onMouseClick = function( event )
 	{
 		//Handle Gui
 		// var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
@@ -539,7 +558,7 @@ AppInputWrapper = function( cloudApp )
 		// 	{
 		// 		intersectsGui[ 0 ].object.onMouseClick();
 		// 	}
-	}
+	} */
 	
 	this.animate = function()
 	{
