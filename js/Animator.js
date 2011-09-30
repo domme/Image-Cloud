@@ -22,7 +22,7 @@ function linear( t )
 
 function smoothstep( t )
 {
-	return  ( t * t * ( 3 - 2 * t ) );
+	return  ( t * t * ( 3.0 - 2.0 * t ) );
 };
 
 function smoothstep2( t )
@@ -197,16 +197,17 @@ function Animator()
 				
 				else if( anim.repetition == "fourthAndBack" )
 				{
-					t = 1.99 - t;
+					t = 2 - t;
 					if( t < 0 )
 					{
 						if( anim.onFinish ) 
 							anim.onFinish();
+						
 						trash.push( anim );
 						continue;
-					}
-						
+					}	
 				}
+			
 			}
 			
 			var step = anim.interpolate( t );
@@ -226,10 +227,7 @@ function Animator()
             
 		    else if( anim.dataType == "Quaternion" )
 		    {
-				var newQuad = new THREE.Quaternion();
-		    	THREE.Quaternion.slerp( anim.startValue, anim.endValue, newQuad, step );
-		
-				anim.animValue.copy( newQuad );
+		    	THREE.Quaternion.slerp( anim.startValue, anim.endValue, anim.animValue, step );
 		    }	
 		
 			else if( anim.dataType == "float" )

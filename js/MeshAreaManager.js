@@ -211,7 +211,7 @@ MeshAreaManager.prototype =
 		
 		
 		
-				
+		
 		for( var i = 0; i < this.numAreas; ++i )
 		{
 			var area = this.meshAreas[ i ];
@@ -223,28 +223,32 @@ MeshAreaManager.prototype =
 				cPos.y > min.y && cPos.y < max.y &&
 				cPos.z < min.z && cPos.z > max.z )
 				{
-					// LOD-Switching between lowres and highres pictures
-					iNext = i < this.numAreas - 1 ? i + 1 : 0;
-					var area_next = this.meshAreas[ iNext ];
-				
-					area.switchToLarge();
-					area.bVisited = true;
-						
-					area_next.switchToLarge();
-					area_next.bVisited = true;
-						
-					for( var k = 0; k < this.numAreas; ++k )
+					
+					if( Math.abs( cHeadingZ ) < 0.1 )
 					{
-						var kArea = this.meshAreas[ k ];
-						if( kArea.bVisited && kArea !== area && kArea !== area_next )
-						{
-							kArea.switchToSmall();
-							kArea.bVisited = false;
-						}
-					}
-					
+						// LOD-Switching between lowres and highres pictures
+						iNext = i < this.numAreas - 1 ? i + 1 : 0;
+						var area_next = this.meshAreas[ iNext ];
 
-					
+
+					 	area.switchToLarge();
+						area.bVisited = true;
+
+						area_next.switchToLarge();
+						area_next.bVisited = true;
+
+						for( var k = 0; k < this.numAreas; ++k )
+						{
+							var kArea = this.meshAreas[ k ];
+							if( kArea.bVisited && kArea !== area && kArea !== area_next )
+							{
+								kArea.switchToSmall();
+								kArea.bVisited = false;
+							}
+						}
+						
+					}
+										
 					//Page-Streaming forward
 					if( i == iPageTriggerForward && cHeadingZ < -0.00001 )
 					{

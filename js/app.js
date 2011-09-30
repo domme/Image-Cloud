@@ -2,7 +2,7 @@
 
 ImageCloudApp = function()
 {
-		this.numImages = 200;
+		this.numImages = 150;
 		this.imageMeshes = [];
 		this.imageMats = [];
 		this.postpro = {};
@@ -38,14 +38,14 @@ ImageCloudApp = function()
 		this.animator = new Animator();
 		
 		this.camera = new THREE.CloudCamera( { fov:90, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: this.renderer.domElement } );
-		this.camera.position.z = 0;
+		this.camera.position.z = 100;
 		this.camera.position.y = 0;
 		this.camera.farHeight = 2 * ( Math.tan( this.camera.fov / 2 ) * this.camera.far );
 		this.camera.farWidth = this.camera.aspect * this.camera.farHeight;
 		this.camera.fovHorizontal = 2 *( Math.atan( ( this.camera.farWidth / 2 ) / this.camera.far ) );
 	
 		this.scene= new THREE.Scene( );
-		this.scene.fog = new THREE.FogExp2( this.clearColor, 0.0003 );
+		this.scene.fog = new THREE.FogExp2( this.clearColor, 0.0005 );
 	
 		this.colorRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBAFormat, depthBuffer: true, stencilBuffer: false } );
 		this.depthRT = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, format: THREE.RGBAFormat, depthBuffer: true, stencilBuffer: false } );
@@ -90,7 +90,7 @@ ImageCloudApp = function()
 			
 					app.meshAreaManager = new MeshAreaManager( {
 						numMeshesMax : app.numImages,
-						numMeshesPerArea : 10,
+						numMeshesPerArea : 25,
 						camera : app.camera,
 						meshes : app.imageMeshes,
 						meshMaterials : app.imageMats,
@@ -504,49 +504,70 @@ AppInputWrapper = function( cloudApp )
 		app.clickedMesh = app.handleMousePick();
 		
 		if( app.clickedMesh != null && app.clickedMesh == app.lastClickedMesh )
-		{
-			var endPos = new THREE.Vector3();
-			endPos.copy( app.clickedMesh.position );
-			var zVert = ( app.clickedMesh.height * app.clickedMesh.scale.y ) / 2 * Math.tan( app.camera.fov / 2 );
-			var zHor = ( app.clickedMesh.width * app.clickedMesh.scale.x ) / 2 * Math.tan( app.camera.fovHorizontal / 2 );
+		{	
+			if( app.camera.viewMesh != app.clickedMesh )
+			{
+				var endPos = new THREE.Vector3();
+				endPos.copy( app.clickedMesh.position );
+				var zVert = ( app.clickedMesh.height * app.clickedMesh.scale.y ) / 2 * Math.tan( app.camera.fov / 2 );
+				var zHor = ( app.clickedMesh.width * app.clickedMesh.scale.x ) / 2 * Math.tan( app.camera.fovHorizontal / 2 );
+
+				endPos.z += Math.max( zVert / 2.5, zHor / 2.5 );
+				app.camera.currViewModeDistance = Math.max( zVert / 2.5, zHor / 2.5 );
+				app.camera.bImageViewMode = true;
+
+
+				var v3Forward = new THREE.Vector3( 0, 0, -1 );
+				var v3Aim = new THREE.Vector3( app.clickedMesh.position.x - app.camera.position.x, app.clickedMesh.position.y - app.camera.position.y, app.clickedMesh.position.z - app.camera.position.z );
+				v3Aim.normalize();
+
+				var v3Axis = new THREE.Vector3();
+				v3Axis.cross( v3Forward, v3Aim );
+				v3Axis.normalize();
+
+				var fAngle = v3Aim.dot( v3Forward ) / 3;
+
+				var endRot = new THREE.Quaternion();
+				endRot.setFromAxisAngle( v3Axis, fAngle );
+
+				app.animator.AddAnimation( { 
+					interpolationType: "smoothstep2",
+					dataType: "Quaternion",
+					startValue: app.camera.quaternion,
+					endValue: endRot,
+					animValue: app.camera.quaternion,
+					duration: 1000,
+					//repetition: "fourthAndBackLoop"
+					repetition: "fourthAndBack"
+					 } );
+
+				app.animator.AddAnimation( { 
+					interpolationType: "smoothstep2",
+					dataType: "Vector3", 
+					startValue: app.camera.position, 
+					endValue: endPos, 
+					animValue: app.camera.position,
+					duration: 3000,
+					repetition: "oneShot"
+				  } );
+				
+				app.camera.viewMesh = app.clickedMesh;
+			}
 			
-			endPos.z += Math.max( zVert / 2.5, zHor / 2.5 );
-			app.camera.currViewModeDistance = Math.max( zVert / 2.5, zHor / 2.5 );
-			app.camera.bImageViewMode = true;
-			
-		
-			var v3Forward = new THREE.Vector3( 0, 0, -1 );
-			var v3Aim = new THREE.Vector3( app.clickedMesh.position.x - app.camera.position.x, app.clickedMesh.position.y - app.camera.position.y, app.clickedMesh.position.z - app.camera.position.z );
-			v3Aim.normalize();
-			
-			var v3Axis = new THREE.Vector3();
-			v3Axis.cross( v3Forward, v3Aim );
-			v3Axis.normalize();
-			
-			var fAngle = v3Aim.dot( v3Forward ) / 2.5;
-			
-			var endRot = new THREE.Quaternion();
-			endRot.setFromAxisAngle( v3Axis, fAngle );
-			
-			app.animator.AddAnimation( { 
-				interpolationType: "smoothstep2",
-				dataType: "Quaternion",
-				startValue: app.camera.quaternion,
-				endValue: endRot,
-				animValue: app.camera.quaternion,
-				duration: 1500,
-				repetition: "fourthAndBack"
-				 } );
-			
-			app.animator.AddAnimation( { 
-				interpolationType: "smoothstep2",
-				dataType: "Vector3", 
-				startValue: app.camera.position, 
-				endValue: endPos, 
-				animValue: app.camera.position,
-				duration: 3000,
-				repetition: "oneShot"
-			  } );
+			else if( app.camera.viewMesh != null && app.camera.viewMesh == app.clickedMesh )
+			{
+				app.animator.AddAnimation( { 
+					interpolationType: "smoothstep2",
+					dataType: "Vector3", 
+					startValue: app.camera.position, 
+					endValue: new THREE.Vector3( app.camera.position.x, app.camera.position.y, app.camera.position.z + 300 ), 
+					animValue: app.camera.position,
+					duration: 2000,
+					repetition: "oneShot"
+				  } );
+				
+				app.camera.viewMesh = null;
+			}	
 		}
 	}
 	
