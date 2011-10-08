@@ -9,8 +9,14 @@ CallbackWrapper = function( cloudCamera )
 	
 	this.onMouseMove = function( event )
 	{
-		if( event.button == 0 && camera.mouseDown ) //left mouse button
+		if( event.button == 0 && camera.mouseDown && !camera.dragStarted ) //left mouse button
+		{
 			camera.dragStarted = true;
+			camera.newOrientation.copy( camera.baseOrientation );
+			camera.dragPosStart.x = event.clientX;
+			camera.dragPosStart.y = event.clientY;
+			
+		}
 		
 		if( camera.dragStarted )
 		{
@@ -21,8 +27,8 @@ CallbackWrapper = function( cloudCamera )
 			var dragSpeedX = event.clientX - camera.dragPosStart.x;
 			var dragSpeedY = event.clientY - camera.dragPosStart.y;
 			
-			camera.heading.x -= dragSpeedX * 5;
-			camera.heading.y += dragSpeedY * 5;		
+			camera.heading.x -= dragSpeedX * 15;
+			camera.heading.y += dragSpeedY * 15;		
 			
 			var orientX = new THREE.Quaternion();
 			var orientY = new THREE.Quaternion();
@@ -70,7 +76,6 @@ CallbackWrapper = function( cloudCamera )
 				camera.heading.z = 0;
 			}
 
-			camera.newOrientation.copy( camera.baseOrientation );
 			camera.lastMouseDown = true;
 		}
 	};
@@ -150,7 +155,6 @@ THREE.CloudCamera = function ( parameters )
 	this.moveBBoxMax = new THREE.Vector3();
 	
 	this.lastPos = new THREE.Vector3();
-	this.switchActions = [];
 	
 	this.update = function()
 	{
@@ -206,27 +210,9 @@ THREE.CloudCamera = function ( parameters )
 			
 		this.tLast = new Date().getTime();
 
-		if( this.switchActions.length > 0 && this.position.distanceToSquared( this.lastPos ) < 0.05 )
-		{
-			this.makeSwitchActions();
-		}
-
 		this.lastPos.copy( this.position );
 		
 		this.supr.update.call( this );
-	};
-	
-	this.makeSwitchActions = function()
-	{
-		for( var i = 0; i < this.switchActions.length; ++i )
-		{
-			var action = this.switchActions[ i ];
-			
-			if( action )
-				action();
-		}
-		
-		this.switchActions.clear();
 	};
 	
 	this.checkAngle = function( angle )

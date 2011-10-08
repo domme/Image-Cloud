@@ -164,23 +164,6 @@ function createGaussTexture( kernelSize )
 		}
 	}
 	
-	// var sigma = kernelSize + 1;
-	// var e = 2.718281828;
-	// var gaussSum = 0.0;
-	// for( var i = 0; i <= kernelSize; ++i )
-	// {
-	// 	var x = Math.abs( i );
-	// 	var gauss = ( 1.0 / Math.sqrt( 2.0 * Math.PI * sigma * sigma ) ) * Math.pow( e, ( ( -x * x ) / ( 2.0 * sigma * sigma ) ) );
-	// 	gaussSum += gauss;
-	// 	gaussValues.push( gauss );
-	// }
-	// 
-	// for( var i = 0; i < gaussValues.length; ++i )
-	// {
-	// 	gaussValues[ i ] /= gaussSum;
-	// }
-	
-	
 	var width = finalGaussValues.length;
 	var height = 2;
 	var canvas = document.createElement( 'canvas' );

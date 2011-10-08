@@ -10,7 +10,7 @@
 			<key>filename</key>
 			<string>ImageCloud.html</string>
 			<key>lastUsed</key>
-			<date>2011-09-29T14:02:05Z</date>
+			<date>2011-10-06T11:00:07Z</date>
 			<key>selected</key>
 			<true/>
 		</dict>
@@ -21,37 +21,37 @@
 					<key>filename</key>
 					<string>js/app.js</string>
 					<key>lastUsed</key>
-					<date>2011-09-29T12:33:43Z</date>
+					<date>2011-09-30T13:58:17Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/Postpro.js</string>
 					<key>lastUsed</key>
-					<date>2011-09-28T19:26:24Z</date>
+					<date>2011-09-30T13:53:27Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/Animator.js</string>
 					<key>lastUsed</key>
-					<date>2011-07-21T20:51:23Z</date>
+					<date>2011-09-30T13:53:42Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/MeshArea.js</string>
 					<key>lastUsed</key>
-					<date>2011-09-29T11:55:41Z</date>
+					<date>2011-09-30T12:51:29Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/MeshAreaManager.js</string>
 					<key>lastUsed</key>
-					<date>2011-09-29T11:55:43Z</date>
+					<date>2011-09-30T12:19:06Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>js/CloudCamera.js</string>
 					<key>lastUsed</key>
-					<date>2011-09-29T12:35:22Z</date>
+					<date>2011-10-06T11:00:07Z</date>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -77,6 +77,8 @@
 					<string>../three.js/src/cameras</string>
 				</dict>
 				<dict>
+					<key>expanded</key>
+					<true/>
 					<key>name</key>
 					<string>core</string>
 					<key>regexFolderFilter</key>
@@ -85,6 +87,8 @@
 					<string>../three.js/src/core</string>
 				</dict>
 				<dict>
+					<key>expanded</key>
+					<true/>
 					<key>name</key>
 					<string>extras</string>
 					<key>regexFolderFilter</key>
@@ -101,6 +105,8 @@
 					<string>../three.js/src/lights</string>
 				</dict>
 				<dict>
+					<key>expanded</key>
+					<true/>
 					<key>name</key>
 					<string>materials</string>
 					<key>regexFolderFilter</key>
@@ -109,6 +115,8 @@
 					<string>../three.js/src/materials</string>
 				</dict>
 				<dict>
+					<key>expanded</key>
+					<true/>
 					<key>name</key>
 					<string>objects</string>
 					<key>regexFolderFilter</key>
@@ -125,6 +133,8 @@
 					<string>../three.js/src/renderers</string>
 				</dict>
 				<dict>
+					<key>expanded</key>
+					<true/>
 					<key>name</key>
 					<string>scenes</string>
 					<key>regexFolderFilter</key>
@@ -478,14 +488,204 @@
 			<key>firstVisibleLine</key>
 			<integer>231</integer>
 		</dict>
+		<key>../three.js/src/core/Geometry.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>373</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>269</integer>
+		</dict>
+		<key>../three.js/src/core/Matrix4.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>10</integer>
+				<key>line</key>
+				<integer>690</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>676</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>1</integer>
+				<key>line</key>
+				<integer>690</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>10</integer>
+				<key>line</key>
+				<integer>690</integer>
+			</dict>
+		</dict>
+		<key>../three.js/src/core/Object3D.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>../three.js/src/core/Projector.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>../three.js/src/core/Quaternion.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>38</integer>
+				<key>line</key>
+				<integer>211</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>205</integer>
+		</dict>
+		<key>../three.js/src/core/Vector3.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>9</integer>
+				<key>line</key>
+				<integer>232</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>206</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>1</integer>
+				<key>line</key>
+				<integer>232</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>18</integer>
+				<key>line</key>
+				<integer>232</integer>
+			</dict>
+		</dict>
+		<key>../three.js/src/extras/cameras/FirstPersonCamera.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>1</integer>
+				<key>line</key>
+				<integer>34</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>41</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>114</integer>
+				<key>line</key>
+				<integer>34</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>1</integer>
+				<key>line</key>
+				<integer>34</integer>
+			</dict>
+		</dict>
+		<key>../three.js/src/materials/MeshBasicMaterial.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>79</integer>
+				<key>line</key>
+				<integer>41</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>19</integer>
+		</dict>
+		<key>../three.js/src/objects/Mesh.js</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>40</integer>
+				<key>line</key>
+				<integer>6</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>34</integer>
+				<key>line</key>
+				<integer>6</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>43</integer>
+				<key>line</key>
+				<integer>6</integer>
+			</dict>
+		</dict>
 		<key>ImageCloud.html</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>4</integer>
 				<key>line</key>
-				<integer>85</integer>
+				<integer>30</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -511,84 +711,84 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>40</integer>
+				<integer>6</integer>
 				<key>line</key>
-				<integer>103</integer>
+				<integer>204</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>64</integer>
+			<integer>218</integer>
 		</dict>
 		<key>js/CloudCamera.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>91</integer>
+				<integer>35</integer>
 				<key>line</key>
-				<integer>180</integer>
+				<integer>254</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>151</integer>
+			<integer>239</integer>
 		</dict>
 		<key>js/MeshArea.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>58</integer>
+				<integer>22</integer>
 				<key>line</key>
-				<integer>35</integer>
+				<integer>89</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>65</integer>
 		</dict>
 		<key>js/MeshAreaManager.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>3</integer>
+				<integer>6</integer>
 				<key>line</key>
-				<integer>320</integer>
+				<integer>268</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>274</integer>
+			<integer>247</integer>
 		</dict>
 		<key>js/Postpro.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>2</integer>
+				<integer>1</integer>
 				<key>line</key>
-				<integer>75</integer>
+				<integer>165</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>45</integer>
+			<integer>73</integer>
 		</dict>
 		<key>js/app.js</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>58</integer>
+				<integer>33</integer>
 				<key>line</key>
-				<integer>311</integer>
+				<integer>149</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>299</integer>
+			<integer>92</integer>
 		</dict>
 	</dict>
 	<key>openDocuments</key>
@@ -598,15 +798,24 @@
 		<string>js/AdditionalShadersCoffee.coffee</string>
 		<string>js/Animator.js</string>
 		<string>js/app.js</string>
+		<string>../three.js/src/core/Quaternion.js</string>
+		<string>../three.js/src/core/Vector3.js</string>
+		<string>../three.js/src/core/Object3D.js</string>
+		<string>../three.js/src/extras/cameras/FirstPersonCamera.js</string>
+		<string>../three.js/src/core/Projector.js</string>
+		<string>../three.js/src/core/Matrix4.js</string>
+		<string>../three.js/src/objects/Mesh.js</string>
+		<string>../three.js/src/materials/MeshBasicMaterial.js</string>
 		<string>js/Postpro.js</string>
 		<string>../three.js/examples/webgl_sandbox.html</string>
 		<string>../three.js/examples/webgl_materials.html</string>
 		<string>js/MeshAreaManager.js</string>
 		<string>js/CloudCamera.js</string>
+		<string>../three.js/src/core/Geometry.js</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{7, 43}, {649, 734}}</string>
+	<string>{{7, 43}, {925, 734}}</string>
 </dict>
 </plist>

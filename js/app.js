@@ -90,7 +90,7 @@ ImageCloudApp = function()
 			
 					app.meshAreaManager = new MeshAreaManager( {
 						numMeshesMax : app.numImages,
-						numMeshesPerArea : 25,
+						numMeshesPerArea : 15,
 						camera : app.camera,
 						meshes : app.imageMeshes,
 						meshMaterials : app.imageMats,
@@ -459,17 +459,11 @@ AppInputWrapper = function( cloudApp )
 		// if( app.pickedMesh != null && Math.abs( app.pickedMesh.position.z - app.camera.position.z ) < app.camera.currViewModeDistance + 400.0 )
 		// 		app.pickedMesh = null;
 		
-		if( app.pickedMesh != null && app.pickedMesh != app.lastPickedMesh )
-		{
-			app.pickedMesh.scale.x *= app.pickScaleIncrease;
-			app.pickedMesh.scale.y *= app.pickScaleIncrease;
-		}
+		if( app.pickedMesh != null )
+			document.body.style.cursor = 'pointer';
 		
-		if( app.lastPickedMesh != null && app.pickedMesh != app.lastPickedMesh )
-		{
-			app.lastPickedMesh.scale.x /= app.pickScaleIncrease;
-			app.lastPickedMesh.scale.y /= app.pickScaleIncrease;
-		}
+		else
+			document.body.style.cursor = 'default';
 		
 		app.lastPickedMesh = app.pickedMesh;
 		
