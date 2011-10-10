@@ -1,5 +1,3 @@
-
-
 ImageCloudApp = function()
 {
 		this.numImages = 150;
@@ -21,20 +19,14 @@ ImageCloudApp = function()
 		this.bDof = false;
 	
 		this.container = document.getElementById('webgl_div');
-		//document.body.appendChild( this.container );
-		
+				
 		this.clearColor = 0xffffff;
 		this.renderer	= new THREE.WebGLRenderer( { stencil: false, antialias: false, clearColor: this.clearColor, clearAlpha : 1 } );
 		this.renderer.setSize( window.innerWidth, window.innerHeight );
 		this.renderer.autoClear = false;
 		
 		this.container.appendChild( this.renderer.domElement );
-		
-		this.stats = new Stats();
-		this.stats.domElement.style.position = 'absolute';
-		this.stats.domElement.style.top = '0px';
-		this.container.appendChild( this.stats.domElement );
-	
+				
 		this.animator = new Animator();
 		
 		this.camera = new THREE.CloudCamera( { fov:90, aspect: window.innerWidth / window.innerHeight, near: 1, far: 10000, domElement: this.renderer.domElement } );
@@ -106,9 +98,7 @@ ImageCloudApp = function()
 					app.container.onmousemove = app.inputWrapper.onMouseMove;
 					app.container.onmousedown = app.inputWrapper.onMouseDown;
 					app.container.onmouseup = app.inputWrapper.onMouseUp;
-				//app.container.onclick = app.inputWrapper.onMouseClick;
-		
-				//	app.container.ondblclick = app.inputWrapper.onDoubleClick;
+						
 					document.body.onkeyup = app.inputWrapper.onKeyUp;
 		
 					app.rebuildPositions();
@@ -182,138 +172,9 @@ ImageCloudApp = function()
 	
 	this.rebuildPositions = function()
 	{
-		switch (this.imagePositionMode)
-		{
-			case 0:
-				this.rebuildPositions_line();
-			break;
-			
-			case 1:
-				this.rebuildPositions_2Dgrid();
-			break;
-			
-			case 2:
-				this.meshAreaManager.RebuildPositions();
-			break;
-			
-			default:
-				rebuildPositions_2dgrid();
-			break;
-		}
+		this.meshAreaManager.RebuildPositions();
 	}
 	
-	this.rebuildPositions_line = function()
-	{
-		var currPosX = 0;
-		
-		var boundMin = new THREE.Vector3();
-		var boundMax = new THREE.Vector3();
-		var imageOffset = 10;
-		
-		for( var i = 0; i < this.imageMeshes.length; ++i )
-		{
-			var posY = 0;
-			var posX = 0;
-			var mesh = this.imageMeshes[ i ];
-			
-			var posXAdd = mesh.width + imageOffset;
-			
-			posX = currPosX + posXAdd - mesh.width / 2;
-			currPosX += posXAdd;
-			
-			mesh.tempPos = new THREE.Vector3();
-			mesh.tempPos.x = posX;
-			mesh.tempPos.y = posY;
-			
-			updateBounds( mesh.tempPos, boundMin, boundMax );
-		}
-		
-		boundMin.x -= this.imageMeshes[ 0 ].width / 2;
-		boundMax.x += this.imageMeshes[ this.imageMeshes.length - 1 ].width / 2;
-		
-		for( var i = 0; i < this.imageMeshes.length; ++i )
-		{
-			var mesh = this.imageMeshes[ i ];
-			mesh.tempPos.x -= ( boundMax.x - boundMin.x ) / 2;
-			
-			this.animator.AddAnimation( { 
-				interpolationType: "smoothstep", 
-				dataType: "Vector3", 
-				startValue: mesh.position, 
-				endValue: mesh.tempPos,
-				animValue: mesh.position,
-				duration: 2000,
-				repetition: "oneShot"
-			 } );
-		}
-	}
-	
-	this.rebuildPositions_2Dgrid = function()
-	{
-		//renderer.setDepthTest( false );
-		var currPosX = 0;
-		
-		var maxPosY = 0;
-		var currMaxPosY = 0;
-		
-		var boundMin = new THREE.Vector3();
-		var boundMax = new THREE.Vector3();
-		
-		var imageRowCount = 30;
-		
-		for( var i = 0; i < this.imageMeshes.length; ++i )
-		{
-			var posY = 0;
-			var posX = 0;
-			var mesh = this.imageMeshes[ i ];
-			
-			if( i  % imageRowCount == 0 )
-			{
-				currPosX = 0;
-				maxPosY = currMaxPosY;
-			}
-							
-			if( i >= imageRowCount )
-			{
-				var meshAbove = this.imageMeshes[ i - imageRowCount ];
-				posY = maxPosY - imageOffset - mesh.height / 2;
-			}
-			
-			var posXAdd = mesh.width + imageOffset;
-			
-			posX = currPosX + posXAdd - mesh.width / 2;
-			currPosX += posXAdd;
-			
-			if( posY - mesh.height / 2 < currMaxPosY )
-			{
-				currMaxPosY = posY - mesh.height / 2;
-			}
-					
-			mesh.tempPos = new THREE.Vector3();
-			mesh.tempPos.x = posX;
-			mesh.tempPos.y = posY;
-			
-			updateBounds( mesh.tempPos, boundMin, boundMax );
-		}
-		
-		for( var i = 0; i < this.imageMeshes.length; ++i )
-		{
-			var mesh = this.imageMeshes[ i ];
-			
-			mesh.tempPos.x -= ( boundMax.x - boundMin.x ) / 2;
-			mesh.tempPos.y += ( boundMax.y - boundMin.y ) / 2;
-												
-			this.animator.AddAnimation( { 
-				interpolationType: "smoothstep", 
-				dataType: "Vector3", 
-				startValue: mesh.position, 
-				endValue: mesh.tempPos,
-				animValue: mesh.position,
-				duration: 3000,
-				repetition: "oneShot"
-			  } );
-		}
-	}
 	
 	this.toggleAutoMove = function()
 	{
@@ -394,24 +255,6 @@ function loadTexture( path, mapping, app, callback )
 	return texture;
 };
 
-function updateBounds( pos, boundMin, boundMax )
-{
-	if( pos.x < boundMin.x )
-		boundMin.x = pos.x;
-	if( pos.x > boundMax.x )
-		boundMax.x = pos.x;
-		
-	if( pos.y < boundMin.y )
-		boundMin.y = pos.y;
-	if( pos.y > boundMax.y )
-		boundMax.y = pos.y;
-		
-	if( pos.z < boundMin.z )
-		boundMin.z = pos.z;
-	if( pos.z > boundMax.z )
-		boundMax.z = pos.z;
-};
-
 
 AppInputWrapper = function( cloudApp )
 {
@@ -455,10 +298,7 @@ AppInputWrapper = function( cloudApp )
 				app.animator.bAcceptFocus = false;
 			}
 		}
-		
-		// if( app.pickedMesh != null && Math.abs( app.pickedMesh.position.z - app.camera.position.z ) < app.camera.currViewModeDistance + 400.0 )
-		// 		app.pickedMesh = null;
-		
+			
 		if( app.pickedMesh != null )
 			document.body.style.cursor = 'pointer';
 		
@@ -478,17 +318,7 @@ AppInputWrapper = function( cloudApp )
 		app.clickedMesh = app.handleMousePick();
 		app.lastClickedMesh = app.clickedMesh;
 	}
-	
-	this.onKeyUp = function( event ) 
-	{
-		/*switch( event.keyCode ) 
-		{
-			case 82: 
-				app.togglePerspective();
-			break;
-		} */
-	}
-	
+		
 	this.onMouseUp = function( event )
 	{
 		app.mouseScenePos.x = ( event.clientX / window.innerWidth ) * 2.0 - 1.0;
@@ -531,7 +361,6 @@ AppInputWrapper = function( cloudApp )
 					endValue: endRot,
 					animValue: app.camera.quaternion,
 					duration: 1000,
-					//repetition: "fourthAndBackLoop"
 					repetition: "fourthAndBack"
 					 } );
 
@@ -564,23 +393,12 @@ AppInputWrapper = function( cloudApp )
 			}	
 		}
 	}
-	
-	/*this.onMouseClick = function( event )
-	{
-		//Handle Gui
-		// var intersectsGui = intersectWithMouse( gui.scene, gui.camera );
-		// 	if( intersectsGui.length > 0 )
-		// 	{
-		// 		intersectsGui[ 0 ].object.onMouseClick();
-		// 	}
-	} */
-	
+		
 	this.animate = function()
 	{
 		requestAnimationFrame( wrapper.animate );	
 		app.camera.update();
-		app.stats.update();
-		
+				
 		app.meshAreaManager.Update();
 		app.animator.animate();
 		app.render();
