@@ -46,12 +46,13 @@ MeshAreaManager.prototype =
 		this.urlFetchLock = true;
 		var manager = this;
 				
-		$.getJSON("http://img.ly/beautiful.json?page=" + manager.urlFetchTimes + "&per_page=" + amount + "&jsoncallback=?", function (data) 
+		$.getJSON("http://img.ly/beautiful.json?page=" + manager.urlFetchTimes + "&per_page=" + amount + "&callback=?", function (data) 
+		//$.getJSON('http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=hello&callback=?', function(data)
 		{
 			$.each(data, function (i, item) 
 			{	
-				var scr_temp = item.scape_image_url;
-				var scr_temp_large = item.image_url;
+				var scr_temp = item.image;
+				var scr_temp_large = item.image;
 
 				if( scr_temp.substr( 0,7 ) !== "http://" )		
 					scr_temp = 'http://img.ly' + scr_temp;

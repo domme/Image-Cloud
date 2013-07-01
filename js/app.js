@@ -74,8 +74,8 @@ ImageCloudApp = function()
 		
 					var loadingTexture = app.imageMeshes[ 0 ].materials[ 0 ];
 					
-					var v3ImageAreaMin = new THREE.Vector3( -900.0, -700.0, 0.0 );
-					var v3ImageAreaMax = new THREE.Vector3( 900.0, 700.0, 6000.0 );
+					var v3ImageAreaMin = new THREE.Vector3( -1900.0, -1700.0, 0.0 );
+					var v3ImageAreaMax = new THREE.Vector3( 1900.0, 1700.0, 10000.0 );
 					
 					app.camera.moveBBoxMax = v3ImageAreaMax;
 					app.camera.moveBBoxMin = v3ImageAreaMin;
